@@ -6,6 +6,7 @@ Item {
   id: root
 
   visible: false
+  property bool active: false
   property bool enabled: true
   property string animationMode: "Slide + Fade"
   property string animationPreset: "Smooth"
@@ -20,6 +21,8 @@ Item {
   function refresh() {
     settingsFile.reload()
   }
+
+  onActiveChanged: if (active) refresh()
 
   function load(raw) {
     var data = null
@@ -36,13 +39,19 @@ Item {
       root.appearanceOverrideEnabled = data.appearanceOverrideEnabled
   }
 
+  Timer {
+    interval: 150
+    repeat: true
+    running: root.active
+    onTriggered: root.refresh()
+  }
+
   FileView {
     id: settingsFile
     path: root.settingsPath
-    watchChanges: true
+    watchChanges: false
     printErrors: false
     onLoaded: root.load(text())
     onLoadFailed: root.load("{}")
-    onFileChanged: reload()
   }
 }

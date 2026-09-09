@@ -86,7 +86,7 @@ Item {
 
   Timer {
     id: saveTimer
-    interval: 200
+    interval: 60
     repeat: false
     onTriggered: root.saveSettings()
   }

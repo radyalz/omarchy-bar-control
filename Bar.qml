@@ -174,11 +174,17 @@ Item {
   FileView {
     id: autohideSettingsFile
     path: root.autohideSettingsPath
-    watchChanges: true
+    watchChanges: false
     printErrors: false
     onLoaded: root.loadAutohideSettings(text())
     onLoadFailed: root.loadAutohideSettings("")
-    onFileChanged: reload()
+  }
+
+  Timer {
+    interval: 200
+    repeat: true
+    running: root.runtimeService === null
+    onTriggered: autohideSettingsFile.reload()
   }
   property var fallbackBarConfig: ({
     position: "top",

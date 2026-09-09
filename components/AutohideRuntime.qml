@@ -6,15 +6,22 @@ Item {
   visible: false
   property var shell: null
   property var fallback: null
-  readonly property var liveService:
-    shell && typeof shell.serviceFor === "function"
-      ? shell.serviceFor("radyalz.bar-control") : null
+  property var liveService: null
   readonly property var settings: liveService || fallback
   property int edgeHoverCount: 0
   readonly property bool edgeHovered: edgeHoverCount > 0
 
   signal showRequested()
   signal barConfigRequested()
+
+  function resolveLiveService() {
+    var next = null
+    try {
+      if (root.shell && typeof root.shell.serviceFor === "function")
+        next = root.shell.serviceFor("radyalz.bar-control")
+    } catch (error) { }
+    if (next !== root.liveService) root.liveService = next
+  }
 
   function setEdgeHovered(hovered) {
     edgeHoverCount = Math.max(0, edgeHoverCount + (hovered ? 1 : -1))
@@ -27,6 +34,16 @@ Item {
     barConfigRequested()
     if (!liveService.enabled) showRequested()
   }
+
+  Timer {
+    interval: 200
+    repeat: true
+    running: root.shell !== null
+    onTriggered: root.resolveLiveService()
+  }
+
+  Component.onCompleted: root.resolveLiveService()
+  onShellChanged: root.resolveLiveService()
 
   Connections {
     target: root.liveService

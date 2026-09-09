@@ -23,7 +23,7 @@ Panel {
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 
-  LauncherState { id: state }
+  LauncherState { id: state; active: root.opened }
   LauncherActions { id: actions; bar: root.bar; host: root }
   LauncherPanelLifecycle {
     id: lifecycle
