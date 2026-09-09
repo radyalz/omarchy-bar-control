@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
   "id": "radyalz.bar-control-launcher",
-  "name": "Radyalz Bar Control Settings",
+  "name": "Radyalz Bar Control",
   "version": "0.2.3",
   "author": "Radman Alizadeh (Radyalz)",
-  "description": "Optional bar button that opens the Radyalz Bar Control settings panel.",
+  "description": "Compact bar popover for Radyalz Bar Control quick settings.",
   "license": "MIT",
   "kinds": [
     "bar-widget"
   ],
   "entryPoints": {
-    "barWidget": "BarWidget.qml"
+    "barWidget": "Panel.qml"
   },
   "barWidget": {
-    "displayName": "Radyalz Bar Control Settings",
-    "description": "Open Radyalz Bar Control settings.",
+    "displayName": "Radyalz Bar Control",
+    "description": "Quick autohide, animation, placement and appearance controls.",
     "category": "System",
     "allowMultiple": false,
     "defaultSection": "right"

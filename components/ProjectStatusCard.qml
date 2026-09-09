@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls as QQC
 import QtQuick.Layouts
 
 InfoCard {
@@ -31,7 +30,7 @@ InfoCard {
       }
     }
 
-    QQC.Button {
+    GlassButton {
       text: root.service && root.service.githubStatusLoading
         ? "Checking…" : "Check status"
       enabled: root.service !== null && !root.service.githubStatusLoading

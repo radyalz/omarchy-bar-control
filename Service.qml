@@ -91,6 +91,10 @@ Item {
     onTriggered: root.saveSettings()
   }
 
+  ControlBridge {
+    service: root
+  }
+
   function clampInt(value, minimum, maximum, fallback) {
     var n = Number(value)
     if (!isFinite(n))

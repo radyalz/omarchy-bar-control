@@ -6,8 +6,7 @@ Item {
 
   readonly property string pluginId: "radyalz.bar-control"
   readonly property var pageNames: [
-    "Autohide", "Placement", "Animation", "Curve",
-    "Appearance", "Diagnostics", "About", "Support"
+    "Autohide & Motion", "Bar", "Diagnostics", "About & Support"
   ]
 
   property var shell: null
@@ -17,6 +16,11 @@ Item {
 
   function open(payloadJson) {
     closingFromHost = false
+    try {
+      var payload = JSON.parse(String(payloadJson || "{}"))
+      if (Number.isInteger(payload.page))
+        currentPage = Math.max(0, Math.min(pageNames.length - 1, payload.page))
+    } catch (error) { }
     window.visible = true
   }
 

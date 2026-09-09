@@ -3,25 +3,27 @@ import QtQuick.Layouts
 
 ColumnLayout {
   id: root
-
   property string title: ""
   property string description: ""
-
   Layout.fillWidth: true
-  spacing: 5
+  spacing: 6
 
-  Text {
-    text: root.title
-    color: "#f3f4f6"
-    font.pixelSize: 26
-    font.weight: Font.DemiBold
+  RowLayout {
+    Layout.fillWidth: true
+    spacing: 9
+    Rectangle { width: 4; height: 24; radius: 2; color: "#91a7ff" }
+    Text {
+      text: root.title
+      color: "#f7f8fc"
+      font.pixelSize: 23
+      font.weight: Font.DemiBold
+    }
   }
-
   Text {
     Layout.fillWidth: true
     text: root.description
-    color: "#9ca3af"
-    font.pixelSize: 13
+    color: "#9199a8"
+    font.pixelSize: 12
     wrapMode: Text.WordWrap
   }
 }

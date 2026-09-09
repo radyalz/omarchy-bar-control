@@ -3,16 +3,24 @@ import QtQuick.Layouts
 
 Rectangle {
   id: root
-
   default property alias content: contentColumn.data
 
   Layout.fillWidth: true
   implicitHeight: contentColumn.implicitHeight + 28
-  radius: 12
-  color: "#171a20"
+  radius: 14
+  color: Qt.rgba(1, 1, 1, 0.045)
   border.width: 1
-  border.color: "#2d323b"
+  border.color: Qt.rgba(1, 1, 1, 0.075)
 
+  Rectangle {
+    anchors.left: parent.left
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    width: 2
+    radius: 2
+    color: "#829cff"
+    opacity: 0.48
+  }
   ColumnLayout {
     id: contentColumn
     x: 14

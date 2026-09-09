@@ -174,10 +174,10 @@ if [[ ! -f "$plugin/BarModel.js" ]]; then
   exit 1
 fi
 
-# Install optional companion launcher plugin.
+# Install the compact companion bar popover as one self-contained plugin.
+rm -rf "$launcher_plugin"
 mkdir -p "$launcher_plugin"
-cp -a "$here/launcher/manifest.json" "$launcher_plugin/manifest.json"
-cp -a "$here/launcher/BarWidget.qml" "$launcher_plugin/BarWidget.qml"
+cp -a "$here/launcher/." "$launcher_plugin/"
 
 # Always install a desktop/app-menu launcher so the GUI remains reachable even
 # if the bar button is removed or the bar itself is hidden.

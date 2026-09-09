@@ -11,8 +11,8 @@ FloatingWindow {
   signal closeRequested()
 
   visible: false
-  implicitWidth: 1040
-  implicitHeight: 700
+  implicitWidth: 820
+  implicitHeight: 620
   color: "transparent"
 
   SettingsWindowContent {

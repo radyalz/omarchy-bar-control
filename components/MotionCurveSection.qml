@@ -1,24 +1,18 @@
 import QtQuick
-import QtQuick.Controls as QQC
 import QtQuick.Layouts
-import "../components"
 
-SettingsPage {
+ColumnLayout {
   id: root
-
   property var service: null
-
-  PageTitle {
-    title: "Curve"
-    description: "Shape the cubic Bézier curve directly. Drag either control point and preview the motion dot."
-  }
+  Layout.fillWidth: true
+  spacing: 12
 
   CurveActivationCard { service: root.service }
 
   CurveEditor {
-    id: curveEditor
+    id: editor
     Layout.fillWidth: true
-    Layout.preferredHeight: 320
+    Layout.preferredHeight: 280
     x1: root.service ? root.service.curveX1 : 0.25
     y1: root.service ? root.service.curveY1 : 0.10
     x2: root.service ? root.service.curveX2 : 0.25
@@ -28,25 +22,20 @@ SettingsPage {
       if (!root.service) return
       root.service.animationPreset = "Custom"
       root.service.customCurveEnabled = true
-      root.service.curveX1 = x1
-      root.service.curveY1 = y1
-      root.service.curveX2 = x2
-      root.service.curveY2 = y2
+      root.service.curveX1 = x1; root.service.curveY1 = y1
+      root.service.curveX2 = x2; root.service.curveY2 = y2
     }
   }
 
   RowLayout {
     Layout.fillWidth: true
-
-    QQC.Button { text: "Preview curve"; onClicked: curveEditor.play() }
-    QQC.Button {
+    GlassButton { text: "Preview curve"; onClicked: editor.play() }
+    GlassButton {
       text: "Reset curve"
       enabled: root.service !== null
       onClicked: if (root.service) {
-        root.service.curveX1 = 0.25
-        root.service.curveY1 = 0.10
-        root.service.curveX2 = 0.25
-        root.service.curveY2 = 1.00
+        root.service.curveX1 = 0.25; root.service.curveY1 = 0.10
+        root.service.curveX2 = 0.25; root.service.curveY2 = 1.00
         root.service.animationPreset = "Custom"
       }
     }

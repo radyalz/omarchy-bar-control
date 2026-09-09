@@ -10,9 +10,9 @@ QQC.ScrollView {
 
   ColumnLayout {
     id: contentColumn
-    x: 26
-    y: 26
-    width: Math.max(0, root.availableWidth - 52)
-    spacing: 16
+    x: 22
+    y: 22
+    width: Math.max(0, root.availableWidth - 44)
+    spacing: 14
   }
 }

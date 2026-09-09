@@ -1,73 +1,39 @@
 import QtQuick
-import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import "../components"
 
 SettingsPage {
   id: root
-
   property var service: null
 
   PageTitle {
-    title: "Autohide"
-    description: "The autohide feature is an activation module. Turn it on or off here without disabling or uninstalling the plugin."
+    title: "Autohide & motion"
+    description: "Autohide, reveal behavior, animation timing and the custom motion curve live together here."
   }
-
-  InfoCard {
-    RowLayout {
-      Layout.fillWidth: true
-      spacing: 14
-
-      ColumnLayout {
-        Layout.fillWidth: true
-        spacing: 3
-
-        Text {
-          text: "Activate autohide"
-          color: "#f3f4f6"
-          font.pixelSize: 17
-          font.weight: Font.DemiBold
-        }
-
-        Text {
-          Layout.fillWidth: true
-          text: root.service && root.service.enabled
-            ? "The edge trigger is controlling the bar."
-            : "The bar stays visible. All settings remain editable."
-          color: "#9ca3af"
-          font.pixelSize: 12
-          wrapMode: Text.WordWrap
-        }
-      }
-
-      QQC.Switch {
-        checked: root.service ? root.service.enabled : false
-        enabled: root.service !== null
-        onToggled: if (root.service) root.service.enabled = checked
-      }
-    }
-  }
-
+  AutohideActivationCard { service: root.service }
   SectionLabel { label: "Reveal" }
-
   ValueSlider {
     label: "Screen-edge trigger thickness"
-    from: 1
-    to: 50
-    stepSize: 1
+    from: 1; to: 50; stepSize: 1; suffix: " px"
     value: root.service ? root.service.triggerThickness : 5
-    suffix: " px"
     enabled: root.service !== null
     onEdited: function(value) {
       if (root.service) root.service.triggerThickness = Math.round(value)
     }
   }
-
-  Text {
+  SectionLabel { label: "Animation" }
+  AnimationBasics { service: root.service }
+  AnimationTiming { service: root.service; showing: true }
+  AnimationTiming { service: root.service; showing: false }
+  SectionLabel { label: "Curve" }
+  MotionCurveSection { service: root.service }
+  RowLayout {
     Layout.fillWidth: true
-    text: "5 px is the default. A larger trigger is easier to hit; a smaller one is less intrusive."
-    color: "#7f8793"
-    font.pixelSize: 12
-    wrapMode: Text.WordWrap
+    Item { Layout.fillWidth: true }
+    GlassButton {
+      text: "Reset motion"
+      enabled: root.service !== null
+      onClicked: if (root.service) root.service.resetAnimationDefaults()
+    }
   }
 }
