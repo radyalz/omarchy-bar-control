@@ -19,6 +19,40 @@ backup="$state_dir/backups/$stamp"
 legacy_backup="$state_dir/legacy-$stamp"
 mode=""
 
+stop_shell_for_install() {
+  local config_dir="${OMARCHY_PATH:-/usr/share/omarchy}/shell"
+
+  # Omarchy watches ~/.config/omarchy/plugins and hot-reloads changed QML.
+  # Replacing an active full-bar plugin in place can briefly set shell.bar to
+  # null while other panels still dereference it, and Quickshell 0.3.1 can
+  # segfault during that reload. Stop the shell before touching runtime files
+  # so the next process sees one complete, consistent plugin tree.
+  if ! command -v quickshell >/dev/null 2>&1; then
+    printf 'Warning: quickshell was not found; installing without a pre-stop.\n' >&2
+    return
+  fi
+
+  printf 'Stopping Omarchy shell before replacing plugin files ...\n'
+  while timeout 5 quickshell kill -p "$config_dir" --any-display >/dev/null 2>&1; do
+    :
+  done
+}
+
+wait_for_shell() {
+  local attempt
+  command -v omarchy-shell >/dev/null 2>&1 || return 0
+
+  for attempt in {1..80}; do
+    if OMARCHY_SHELL_IPC_TIMEOUT=0.5s omarchy-shell shell ping >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 0.25
+  done
+
+  printf 'Warning: Omarchy shell has not reported ready yet.\n' >&2
+  return 1
+}
+
 usage() {
   cat <<'USAGE'
 Usage: ./install.sh [--launcher left|center|right|app]
@@ -81,6 +115,8 @@ if [[ -z "$mode" ]]; then
   fi
 fi
 
+stop_shell_for_install
+
 mkdir -p "$plugin" "$state_dir/backups"
 
 # Keep a safety backup of any existing install before changing runtime files.
@@ -112,7 +148,7 @@ fi
 # Migrate the previous plugin-local settings file the first time this layout is
 # installed, preferring the old plugin id when both legacy copies exist.
 if [[ ! -f "$settings_file" ]]; then
-  for candidate in "$plugin/settings.json" "$old_plugin/settings.json"; do
+  for candidate in "$old_plugin/settings.json" "$plugin/settings.json"; do
     if [[ -f "$candidate" ]]; then
       cp -a "$candidate" "$settings_file"
       printf 'Migrated settings to %s\n' "$settings_file"
@@ -167,32 +203,9 @@ if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database "$HOME/.local/share/applications" >/dev/null 2>&1 || true
 fi
 
-# Ask the shell to discover the new manifests before enabling them.
-if command -v omarchy-shell >/dev/null 2>&1; then
-  omarchy-shell shell rescanPlugins >/dev/null 2>&1 || true
-fi
-
-if command -v omarchy >/dev/null 2>&1; then
-  # Retire old companion widget first so it cannot remain in a bar section.
-  omarchy plugin disable "$OLD_LAUNCHER_ID" --yes >/dev/null 2>&1 \
-    || omarchy plugin disable "$OLD_LAUNCHER_ID" >/dev/null 2>&1 \
-    || true
-
-  # Enabling a full bar replaces the currently active full bar.
-  omarchy plugin enable "$MAIN_ID" --yes >/dev/null 2>&1 \
-    || omarchy plugin enable "$MAIN_ID" >/dev/null 2>&1 \
-    || true
-
-  omarchy plugin disable "$LAUNCHER_ID" --yes >/dev/null 2>&1 \
-    || omarchy plugin disable "$LAUNCHER_ID" >/dev/null 2>&1 \
-    || true
-
-  if [[ "$mode" != "app" ]]; then
-    omarchy plugin enable "$LAUNCHER_ID" --section "$mode" --yes >/dev/null 2>&1 \
-      || omarchy plugin enable "$LAUNCHER_ID" --section "$mode" >/dev/null 2>&1 \
-      || true
-  fi
-fi
+# The shell is intentionally stopped while runtime files and shell.json are
+# updated. Do not call rescanPlugins or plugin enable/disable helpers here: those
+# paths trigger live reloads, which is exactly what this installer must avoid.
 
 # Make shell.json deterministic even if the Omarchy helper command changes or
 # fails. The bar id activates this bar; the plugins entry starts its service.
@@ -257,13 +270,14 @@ if [[ -d "$old_plugin" || -d "$old_launcher_plugin" ]]; then
   printf 'Legacy backup: %s\n' "$legacy_backup"
 fi
 
-if command -v omarchy-shell >/dev/null 2>&1; then
-  omarchy-shell shell rescanPlugins >/dev/null 2>&1 || true
-fi
 if command -v omarchy >/dev/null 2>&1; then
-  omarchy restart shell
+  # The shell is already stopped, so this is a clean launch rather than a
+  # hot-reload followed by a kill. Some Omarchy versions return before a busy
+  # shell is fully ready, so tolerate that return and perform our own wait.
+  omarchy restart shell || true
+  wait_for_shell || true
 else
-  printf 'Restart the Omarchy shell to load the plugin.\n'
+  printf 'Start the Omarchy shell to load the plugin.\n'
 fi
 
 printf '\nInstalled Radyalz Bar Control v0.2.3.\n'
@@ -278,6 +292,6 @@ fi
 # Open settings once after installation. Failure is harmless; the desktop
 # launcher remains available from the application menu.
 if command -v omarchy-shell >/dev/null 2>&1; then
-  sleep 1
+  sleep 2
   omarchy-shell shell summon "$MAIN_ID" '{}' >/dev/null 2>&1 || true
 fi
