@@ -77,7 +77,7 @@ Item {
   property string stateHome: home + "/.local/state"
   property string omarchyConfigDir: home + "/.config/omarchy"
   readonly property string autohideSettingsPath:
-    home + "/.config/omarchy/plugins/radyalz.bar-control/settings.json"
+    home + "/.config/omarchy/radyalz-bar-control.json"
 
   function loadAutohideSettings(raw) {
     var data = null

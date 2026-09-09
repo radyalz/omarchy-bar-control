@@ -69,7 +69,7 @@ Item {
 
   readonly property string settingsPath:
     Quickshell.env("HOME")
-      + "/.config/omarchy/plugins/radyalz.bar-control/settings.json"
+      + "/.config/omarchy/radyalz-bar-control.json"
 
   property bool settingsLoaded: false
   property bool hydrating: false

@@ -14,6 +14,7 @@ stock_bar="/usr/share/omarchy/shell/plugins/bar"
 here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 stamp="$(date +%Y%m%d-%H%M%S)"
 state_dir="$HOME/.local/state/radyalz-bar-control"
+settings_file="$HOME/.config/omarchy/radyalz-bar-control.json"
 backup="$state_dir/backups/$stamp"
 legacy_backup="$state_dir/legacy-$stamp"
 mode=""
@@ -87,6 +88,10 @@ if [[ -d "$plugin" ]] && find "$plugin" -mindepth 1 -maxdepth 1 -print -quit | g
   mkdir -p "$backup"
   cp -a "$plugin/." "$backup/"
 fi
+if [[ -f "$settings_file" ]]; then
+  mkdir -p "$backup"
+  cp -a "$settings_file" "$backup/radyalz-bar-control.json"
+fi
 
 # Seed the runtime. Prefer the previous working plugin when it exists so local
 # user state can migrate cleanly; otherwise use the stock Omarchy bar runtime.
@@ -102,10 +107,23 @@ elif [[ ! -f "$plugin/BarModel.js" ]]; then
   cp -a "$stock_bar/." "$plugin/"
 fi
 
-# Preserve the old user's settings under the new plugin path.
-if [[ -f "$old_plugin/settings.json" && ! -f "$plugin/settings.json" ]]; then
-  cp -a "$old_plugin/settings.json" "$plugin/settings.json"
+# Keep user settings outside the plugin runtime so an Omarchy/plugin update can
+# replace the installed plugin directory without deleting the user's choices.
+# Migrate the previous plugin-local settings file the first time this layout is
+# installed, preferring the old plugin id when both legacy copies exist.
+if [[ ! -f "$settings_file" ]]; then
+  for candidate in "$plugin/settings.json" "$old_plugin/settings.json"; do
+    if [[ -f "$candidate" ]]; then
+      cp -a "$candidate" "$settings_file"
+      printf 'Migrated settings to %s\n' "$settings_file"
+      break
+    fi
+  done
 fi
+
+# A plugin-local settings.json is legacy state now. Leaving it behind is
+# misleading because Service.qml and Bar.qml no longer read it.
+rm -f "$plugin/settings.json"
 
 # Overlay project-owned files and the modular settings UI.
 for file in Bar.qml Service.qml SettingsPanel.qml manifest.json; do

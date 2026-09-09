@@ -57,3 +57,13 @@ Run:
 
 This returns the active bar to omarchy.bar and removes the plugin, launcher
 widget, and desktop launcher.
+
+SETTINGS PERSISTENCE
+--------------------
+Your settings are stored outside the installed plugin directory at:
+
+  ~/.config/omarchy/radyalz-bar-control.json
+
+This keeps animation, autohide, placement, and appearance choices intact when
+the plugin directory is replaced during an Omarchy or plugin update. Uninstall
+keeps this file by default so a later reinstall can restore the same settings.

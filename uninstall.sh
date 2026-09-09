@@ -56,3 +56,4 @@ if command -v omarchy >/dev/null 2>&1; then
 fi
 
 printf 'Radyalz Bar Control has been uninstalled.\n'
+printf 'Settings kept at %s\n' "$HOME/.config/omarchy/radyalz-bar-control.json"
