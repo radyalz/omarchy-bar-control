@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v omarchy-shell >/dev/null 2>&1; then
+  printf 'Radyalz Bar Control: omarchy-shell was not found in PATH.\n' >&2
+  exit 1
+fi
+
+exec omarchy-shell shell summon radyalz.bar-control '{}'

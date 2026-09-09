@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "radyalz.bar-control-launcher",
+  "name": "Radyalz Bar Control Settings",
+  "version": "0.2.3",
+  "author": "radyalz",
+  "description": "Optional bar button that opens the Radyalz Bar Control settings panel.",
+  "license": "MIT",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Radyalz Bar Control Settings",
+    "description": "Open Radyalz Bar Control settings.",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
