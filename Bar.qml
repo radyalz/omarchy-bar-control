@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.Commons
 import qs.Ui
+import "components"
 import "BarModel.js" as BarModel
 
 Item {
@@ -24,11 +25,10 @@ Item {
   // settings and persisting inline widget state.
   property var shell: null
 
-  // Omarchy Quattro now injects a scoped shell API into third-party plugins.
-  // Keep autohide runtime state inside this bar instead of mutating shell.bar.
-  // SettingsPanel writes settings.json through Service.qml; this bar watches
-  // that file and applies changes live.
-  readonly property var autohideService: autohideSettings
+  // The focused runtime component resolves our own live service and keeps a
+  // file-backed fallback for startup/recovery.
+  readonly property var runtimeService: autohideRuntime.liveService
+  readonly property var autohideService: autohideRuntime.settings
 
   QtObject {
     id: autohideSettings
@@ -64,8 +64,15 @@ Item {
     property bool transparentValue: false
   }
 
-  property int autohideEdgeHoverCount: 0
-  readonly property bool autohideEdgeHovered: autohideEdgeHoverCount > 0
+  AutohideRuntime {
+    id: autohideRuntime
+    shell: root.shell
+    fallback: autohideSettings
+    onShowRequested: root.barHidden = false
+    onBarConfigRequested: root.applyBarConfig()
+  }
+
+  readonly property bool autohideEdgeHovered: autohideRuntime.edgeHovered
   // Manifest for the active bar option. Present for custom bars and useful for
   // diagnostics; the built-in bar does not otherwise need it.
   property var manifest: null
@@ -153,17 +160,15 @@ Item {
       autohideSettings.transparentValue = data.transparent
     }
 
-    applyBarConfig()
-
-    if (!autohideSettings.enabled)
-      root.barHidden = false
+    if (!root.runtimeService) {
+      applyBarConfig()
+      if (!autohideSettings.enabled)
+        root.barHidden = false
+    }
   }
 
   function setAutohideEdgeHovered(hovered) {
-    autohideEdgeHoverCount = Math.max(
-      0,
-      autohideEdgeHoverCount + (hovered ? 1 : -1)
-    )
+    autohideRuntime.setEdgeHovered(hovered)
   }
 
   FileView {
@@ -551,13 +556,20 @@ Item {
   function applyBarConfig() {
     var config = Util.isPlainObject(barConfig) ? barConfig : fallbackBarConfig
 
-    position = autohideSettings.positionOverride !== ""
-      ? normalizePosition(autohideSettings.positionOverride)
+    var servicePosition = root.runtimeService
+      ? String(root.runtimeService.position || "")
+      : autohideSettings.positionOverride
+    position = servicePosition !== ""
+      ? normalizePosition(servicePosition)
       : normalizePosition(config.position)
+
+    var useServiceTransparency = root.runtimeService !== null
     setRequestedTransparency(
-      autohideSettings.transparentOverrideSet
-        ? autohideSettings.transparentValue
-        : config.transparent === true
+      useServiceTransparency
+        ? root.runtimeService.transparent === true
+        : autohideSettings.transparentOverrideSet
+          ? autohideSettings.transparentValue
+          : config.transparent === true
     )
     centerAnchor = Util.canonicalWidgetId(config.centerAnchor || "")
 
@@ -1245,9 +1257,13 @@ Item {
   Timer {
     interval: 50
     repeat: true
-    running: autohideSettings.enabled
+    running: root.autohideService && root.autohideService.enabled
 
     onTriggered: {
+      if (!root.autohideService || !root.autohideService.enabled) {
+        root.barHidden = false
+        return
+      }
       root.barHidden = !(
         root.autohideEdgeHovered
         || root.barHovered
@@ -1263,15 +1279,17 @@ Item {
       PanelWindow {
         required property var modelData
         screen: modelData
-        visible: autohideSettings.enabled
+        visible: root.autohideService && root.autohideService.enabled
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
 
         implicitWidth:
-          root.vertical ? autohideSettings.triggerThickness : 0
+          root.vertical && root.autohideService
+            ? root.autohideService.triggerThickness : 0
 
         implicitHeight:
-          root.vertical ? 0 : autohideSettings.triggerThickness
+          !root.vertical && root.autohideService
+            ? root.autohideService.triggerThickness : 0
 
         anchors {
           top: root.position === "top" || root.vertical

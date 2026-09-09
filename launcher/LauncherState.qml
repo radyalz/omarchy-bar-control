@@ -17,6 +17,10 @@ Item {
   readonly property string settingsPath:
     Quickshell.env("HOME") + "/.config/omarchy/radyalz-bar-control.json"
 
+  function refresh() {
+    settingsFile.reload()
+  }
+
   function load(raw) {
     var data = null
     try { data = JSON.parse(String(raw || "{}")) }

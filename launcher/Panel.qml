@@ -10,18 +10,13 @@ Panel {
   manageIpc: false
   property string view: "main"
 
-  function open() {
-    view = "main"
-    controller.show()
-  }
-  function close() {
-    view = "main"
-    controller.hide()
-  }
-  function toggle() {
-    if (opened) close()
-    else open()
-  }
+  function open() { lifecycle.open() }
+  function close() { lifecycle.close() }
+  function closeForPopoutSwitch() { lifecycle.close() }
+  function toggle() { lifecycle.toggle(opened) }
+
+  onOpenedChanged: lifecycle.syncOpened(opened)
+  Component.onDestruction: lifecycle.releasePopout()
 
   property alias actions: actions
 
@@ -30,6 +25,10 @@ Panel {
 
   LauncherState { id: state }
   LauncherActions { id: actions; bar: root.bar; host: root }
+  LauncherPanelLifecycle {
+    id: lifecycle
+    host: root; bar: root.bar; controller: root.controller; state: state
+  }
 
   BarIconButton {
     id: button
