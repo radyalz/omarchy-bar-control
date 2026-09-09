@@ -17,7 +17,7 @@ Column {
     title: "Autohide"; subtitle: root.state && root.state.enabled ? "Active" : "Bar stays visible"
     checked: root.state ? root.state.enabled : false
     onToggled: function(value) {
-      root.state.enabled = value; root.host.callControl("setEnabled", value)
+      root.state.enabled = value; root.host.actions.callControl("setEnabled", value)
     }
   }
   QuickNavRow {
@@ -39,6 +39,6 @@ Column {
   }
   QuickAction {
     bar: root.host ? root.host.bar : null; text: "Open advanced editor"; primary: true
-    onClicked: root.host.openAdvanced(0)
+    onClicked: root.host.actions.openAdvanced(0)
   }
 }

@@ -7,29 +7,29 @@ Panel {
 
   moduleName: "radyalz.bar-control-launcher"
   ipcTarget: "radyalz.bar-control-launcher"
+  manageIpc: false
   property string view: "main"
 
-  function callControl(method, value) {
-    if (!bar) return
-    var command = "omarchy-shell radyalz.bar-control " + method
-    if (value !== undefined) command += " " + bar.shellQuote(String(value))
-    bar.run(command)
+  function open() {
+    view = "main"
+    controller.show()
   }
-  function openAdvanced(page) {
-    if (!bar) return
-    close()
-    var payload = JSON.stringify({ page: page })
-    bar.run("omarchy-shell shell summon radyalz.bar-control " + bar.shellQuote(payload))
+  function close() {
+    view = "main"
+    controller.hide()
   }
-  function openUrl(url) {
-    if (bar) bar.run("xdg-open " + bar.shellQuote(url))
+  function toggle() {
+    if (opened) close()
+    else open()
   }
 
-  onOpenedChanged: if (!opened) view = "main"
+  property alias actions: actions
+
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 
   LauncherState { id: state }
+  LauncherActions { id: actions; bar: root.bar; host: root }
 
   BarIconButton {
     id: button
