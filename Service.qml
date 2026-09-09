@@ -73,6 +73,7 @@ Item {
 
   property bool settingsLoaded: false
   property bool hydrating: false
+  property double suppressReloadUntil: 0
 
   FileView {
     id: settingsFile
@@ -86,9 +87,19 @@ Item {
 
   Timer {
     id: saveTimer
-    interval: 60
+    interval: 25
     repeat: false
     onTriggered: root.saveSettings()
+  }
+
+  Timer {
+    interval: 150
+    repeat: true
+    running: root.settingsLoaded
+    onTriggered: {
+      if (Date.now() >= root.suppressReloadUntil)
+        settingsFile.reload()
+    }
   }
 
   ControlBridge {
@@ -114,9 +125,7 @@ Item {
   }
 
   function loadSettings(raw) {
-    if (root.settingsLoaded)
-      return
-
+    var firstLoad = !root.settingsLoaded
     var data = null
 
     if (String(raw || "").trim() !== "") {
@@ -199,13 +208,14 @@ Item {
 
     root.hydrating = false
     root.settingsLoaded = true
-    if (!data)
+    if (firstLoad && !data)
       root.scheduleSave()
   }
 
   function scheduleSave() {
     if (!root.settingsLoaded || root.hydrating)
       return
+    root.suppressReloadUntil = Date.now() + 250
     saveTimer.restart()
   }
 
@@ -237,6 +247,7 @@ Item {
       islandRadius: root.islandRadius,
       islandOpacity: root.islandOpacity
     }
+    root.suppressReloadUntil = Date.now() + 200
     settingsFile.setText(JSON.stringify(data, null, 2) + "\n")
   }
 

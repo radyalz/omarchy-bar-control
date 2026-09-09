@@ -20,7 +20,7 @@ Column {
         required property string modelData
         bar: root.host ? root.host.bar : null; text: modelData
         active: root.state && root.state.animationPreset === modelData
-        onClicked: { root.state.animationPreset = modelData; root.host.actions.callControl("setAnimationPreset", modelData) }
+        onClicked: root.state.setAnimationPreset(modelData)
       }
     }
   }
@@ -33,7 +33,7 @@ Column {
         required property string modelData
         bar: root.host ? root.host.bar : null; text: modelData
         active: root.state && root.state.animationMode === modelData
-        onClicked: { root.state.animationMode = modelData; root.host.actions.callControl("setAnimationMode", modelData) }
+        onClicked: root.state.setAnimationMode(modelData)
       }
     }
   }
@@ -41,7 +41,7 @@ Column {
     bar: root.host ? root.host.bar : null; title: "Custom curve"
     subtitle: "Use your Bézier curve for show and hide"
     checked: root.state ? root.state.customCurveEnabled : false
-    onToggled: function(value) { root.state.customCurveEnabled = value; root.host.actions.callControl("setCustomCurve", value) }
+    onToggled: function(value) { root.state.setCustomCurve(value) }
   }
   QuickAction {
     bar: root.host ? root.host.bar : null; text: "Edit timing & curve"; primary: true

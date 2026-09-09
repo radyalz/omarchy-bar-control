@@ -1,6 +1,5 @@
 import QtQuick
-import Quickshell
-import Quickshell.Io
+import "LauncherPresets.js" as Presets
 
 Item {
   id: root
@@ -15,43 +14,41 @@ Item {
   property bool transparent: false
   property bool appearanceOverrideEnabled: false
 
-  readonly property string settingsPath:
-    Quickshell.env("HOME") + "/.config/omarchy/radyalz-bar-control.json"
-
-  function refresh() {
-    settingsFile.reload()
-  }
-
-  onActiveChanged: if (active) refresh()
-
-  function load(raw) {
-    var data = null
-    try { data = JSON.parse(String(raw || "{}")) }
-    catch (error) { return }
+  function apply(data) {
     if (typeof data.enabled === "boolean") root.enabled = data.enabled
     if (typeof data.animationMode === "string") root.animationMode = data.animationMode
     if (typeof data.animationPreset === "string") root.animationPreset = data.animationPreset
-    if (typeof data.customCurveEnabled === "boolean")
-      root.customCurveEnabled = data.customCurveEnabled
+    if (typeof data.customCurveEnabled === "boolean") root.customCurveEnabled = data.customCurveEnabled
     if (typeof data.position === "string") root.position = data.position
     if (typeof data.transparent === "boolean") root.transparent = data.transparent
     if (typeof data.appearanceOverrideEnabled === "boolean")
       root.appearanceOverrideEnabled = data.appearanceOverrideEnabled
   }
 
-  Timer {
-    interval: 150
-    repeat: true
-    running: root.active
-    onTriggered: root.refresh()
+  function refresh() { store.refresh() }
+  function setEnabled(value) { store.update({ enabled: value === true }) }
+  function setAnimationMode(value) { store.update({ animationMode: String(value) }) }
+  function setPosition(value) { store.update({ position: String(value) }) }
+  function setTransparent(value) { store.update({ transparent: value === true }) }
+  function setAppearanceOverride(value) {
+    store.update({ appearanceOverrideEnabled: value === true })
+  }
+  function setCustomCurve(value) {
+    var active = value === true
+    var patch = { customCurveEnabled: active }
+    if (active) patch.animationPreset = "Custom"
+    store.update(patch)
   }
 
-  FileView {
-    id: settingsFile
-    path: root.settingsPath
-    watchChanges: false
-    printErrors: false
-    onLoaded: root.load(text())
-    onLoadFailed: root.load("{}")
+  function setAnimationPreset(value) {
+    store.update(Presets.patch(String(value)))
   }
+
+  LauncherSettingsStore {
+    id: store
+    active: root.active
+    onLoaded: function(data) { root.apply(data) }
+  }
+
+  onActiveChanged: if (active) store.refresh()
 }

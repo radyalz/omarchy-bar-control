@@ -7,14 +7,6 @@ QtObject {
   property var bar: null
   property var host: null
 
-  function callControl(method, value) {
-    if (!bar || typeof bar.run !== "function") return
-    var command = "omarchy-shell radyalz.bar-control " + method
-    if (value !== undefined)
-      command += " " + Util.shellQuote(String(value))
-    bar.run(command)
-  }
-
   function openAdvanced(page) {
     if (!bar || typeof bar.run !== "function") return
     if (host) host.close()

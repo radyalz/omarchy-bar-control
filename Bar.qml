@@ -25,10 +25,10 @@ Item {
   // settings and persisting inline widget state.
   property var shell: null
 
-  // The focused runtime component resolves our own live service and keeps a
-  // file-backed fallback for startup/recovery.
-  readonly property var runtimeService: autohideRuntime.liveService
-  readonly property var autohideService: autohideRuntime.settings
+  // The installed settings file is the single source of truth shared by the
+  // bar, compact popover, and advanced panel. The bar mirrors it locally so
+  // Omarchy's scoped plugin APIs cannot split runtime state between surfaces.
+  readonly property var autohideService: autohideSettings
 
   QtObject {
     id: autohideSettings
@@ -66,10 +66,8 @@ Item {
 
   AutohideRuntime {
     id: autohideRuntime
-    shell: root.shell
-    fallback: autohideSettings
+    settings: autohideSettings
     onShowRequested: root.barHidden = false
-    onBarConfigRequested: root.applyBarConfig()
   }
 
   readonly property bool autohideEdgeHovered: autohideRuntime.edgeHovered
@@ -160,11 +158,9 @@ Item {
       autohideSettings.transparentValue = data.transparent
     }
 
-    if (!root.runtimeService) {
-      applyBarConfig()
-      if (!autohideSettings.enabled)
-        root.barHidden = false
-    }
+    applyBarConfig()
+    if (!autohideSettings.enabled)
+      root.barHidden = false
   }
 
   function setAutohideEdgeHovered(hovered) {
@@ -181,9 +177,9 @@ Item {
   }
 
   Timer {
-    interval: 200
+    interval: 75
     repeat: true
-    running: root.runtimeService === null
+    running: true
     onTriggered: autohideSettingsFile.reload()
   }
   property var fallbackBarConfig: ({
@@ -562,20 +558,15 @@ Item {
   function applyBarConfig() {
     var config = Util.isPlainObject(barConfig) ? barConfig : fallbackBarConfig
 
-    var servicePosition = root.runtimeService
-      ? String(root.runtimeService.position || "")
-      : autohideSettings.positionOverride
+    var servicePosition = autohideSettings.positionOverride
     position = servicePosition !== ""
       ? normalizePosition(servicePosition)
       : normalizePosition(config.position)
 
-    var useServiceTransparency = root.runtimeService !== null
     setRequestedTransparency(
-      useServiceTransparency
-        ? root.runtimeService.transparent === true
-        : autohideSettings.transparentOverrideSet
-          ? autohideSettings.transparentValue
-          : config.transparent === true
+      autohideSettings.transparentOverrideSet
+        ? autohideSettings.transparentValue
+        : config.transparent === true
     )
     centerAnchor = Util.canonicalWidgetId(config.centerAnchor || "")
 

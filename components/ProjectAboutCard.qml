@@ -5,7 +5,7 @@ InfoCard {
   property var service: null
   readonly property string version:
     service && service.manifest && service.manifest.version
-      ? service.manifest.version : "0.3.0"
+      ? service.manifest.version : "0.3.2"
 
   Text {
     text: "Radyalz Bar Control"

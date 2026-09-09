@@ -16,9 +16,7 @@ Column {
     bar: root.host ? root.host.bar : null
     title: "Autohide"; subtitle: root.state && root.state.enabled ? "Active" : "Bar stays visible"
     checked: root.state ? root.state.enabled : false
-    onToggled: function(value) {
-      root.state.enabled = value; root.host.actions.callControl("setEnabled", value)
-    }
+    onToggled: function(value) { root.state.setEnabled(value) }
   }
   QuickNavRow {
     bar: root.host ? root.host.bar : null; title: "Animation & curve"

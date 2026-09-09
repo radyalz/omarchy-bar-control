@@ -21,7 +21,7 @@ Column {
         bar: root.host ? root.host.bar : null
         text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
         active: root.state && root.state.position === modelData
-        onClicked: { root.state.position = modelData; root.host.actions.callControl("setPosition", modelData) }
+        onClicked: root.state.setPosition(modelData)
       }
     }
   }
@@ -29,13 +29,13 @@ Column {
     bar: root.host ? root.host.bar : null; title: "Transparent bar"
     subtitle: "Let the desktop show through"
     checked: root.state ? root.state.transparent : false
-    onToggled: function(value) { root.state.transparent = value; root.host.actions.callControl("setTransparent", value) }
+    onToggled: function(value) { root.state.setTransparent(value) }
   }
   QuickToggleRow {
     bar: root.host ? root.host.bar : null; title: "Custom island appearance"
     subtitle: "Enable padding, radius and opacity controls"
     checked: root.state ? root.state.appearanceOverrideEnabled : false
-    onToggled: function(value) { root.state.appearanceOverrideEnabled = value; root.host.actions.callControl("setAppearanceOverride", value) }
+    onToggled: function(value) { root.state.setAppearanceOverride(value) }
   }
   QuickAction {
     bar: root.host ? root.host.bar : null; text: "More bar settings"; primary: true

@@ -13,7 +13,7 @@ Column {
   }
   QuickHeader {
     width: parent.width; bar: root.host ? root.host.bar : null
-    title: "Radyalz Bar Control"; subtitle: "v0.3.0 · Radman Alizadeh (Radyalz) · MIT"
+    title: "Radyalz Bar Control"; subtitle: "v0.3.2 · Radman Alizadeh (Radyalz) · MIT"
   }
   QuickAction {
     bar: root.host ? root.host.bar : null; text: "Open GitHub"
