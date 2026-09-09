@@ -19,8 +19,19 @@ p = Path.home() / '.config/omarchy/shell.json'
 if p.exists():
     data = json.loads(p.read_text())
     bar = data.get('bar')
-    if isinstance(bar, dict) and bar.get('id') == 'radyalz.bar-control':
-        bar['id'] = 'omarchy.bar'
+    if isinstance(bar, dict):
+        if bar.get('id') == 'radyalz.bar-control':
+            bar['id'] = 'omarchy.bar'
+        layout = bar.get('layout')
+        if isinstance(layout, dict):
+            for section in ('left', 'center', 'right'):
+                layout[section] = [
+                    entry for entry in layout.get(section, [])
+                    if not (
+                        isinstance(entry, dict)
+                        and entry.get('id') == 'radyalz.bar-control-launcher'
+                    )
+                ]
     data['plugins'] = [
         e for e in data.get('plugins', [])
         if not (isinstance(e, dict) and e.get('id') in {

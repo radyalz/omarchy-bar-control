@@ -176,28 +176,54 @@ if command -v omarchy >/dev/null 2>&1; then
   fi
 fi
 
-# Clean stale legacy IDs from shell.json and ensure the renamed bar is selected.
-python - <<'PY'
+# Make shell.json deterministic even if the Omarchy helper command changes or
+# fails. The bar id activates this bar; the plugins entry starts its service.
+MODE="$mode" python - <<'PY'
 import json
+import os
 from pathlib import Path
+
+main_id = 'radyalz.bar-control'
+launcher_id = 'radyalz.bar-control-launcher'
+old_ids = {
+    'radyalz.animated-autohide-bar',
+    'radyalz.animated-autohide-launcher',
+}
+mode = os.environ['MODE']
+
 p = Path.home() / '.config/omarchy/shell.json'
 if p.exists():
     data = json.loads(p.read_text())
     bar = data.setdefault('bar', {})
-    if bar.get('id') in (None, '', 'radyalz.animated-autohide-bar'):
-        bar['id'] = 'radyalz.bar-control'
+    bar['id'] = main_id
+
+    layout = bar.setdefault('layout', {})
+    for section in ('left', 'center', 'right'):
+        cleaned = [
+            entry for entry in layout.get(section, [])
+            if not (
+                isinstance(entry, dict)
+                and entry.get('id') in old_ids | {launcher_id}
+            )
+        ]
+        if mode == section:
+            cleaned.append({'id': launcher_id})
+        layout[section] = cleaned
+
     plugins = []
     seen = set()
     for entry in data.get('plugins', []):
         if not isinstance(entry, dict):
             continue
         pid = entry.get('id')
-        if pid in {'radyalz.animated-autohide-bar', 'radyalz.animated-autohide-launcher'}:
+        if pid in old_ids or pid == main_id:
             continue
         key = json.dumps(entry, sort_keys=True)
         if key not in seen:
             plugins.append(entry)
             seen.add(key)
+    plugins.append({'id': main_id})
+
     data['plugins'] = plugins
     data['version'] = 1
     p.write_text(json.dumps(data, indent=2) + '\n')
