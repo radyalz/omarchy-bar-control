@@ -7,7 +7,7 @@ SettingsPage {
   property var service: null
   readonly property string version:
     service && service.manifest && service.manifest.version
-      ? service.manifest.version : "0.1.0"
+      ? service.manifest.version : "0.2.3"
 
   PageTitle {
     title: "About"
@@ -47,7 +47,7 @@ SettingsPage {
 
     Text {
       width: parent.width
-      text: "The bar began from raavail's Islands Bar and retains its MIT attribution. The autohide service, settings system, animation controls, and GUI are implemented for this plugin."
+      text: "Created by Radman Alizadeh (Radyalz) and licensed under MIT. The bar began from raavail's Islands Bar and retains its MIT attribution; the autohide service, settings system, animation controls, and GUI are implemented for this plugin."
       color: "#9ca3af"
       font.pixelSize: 12
       wrapMode: Text.WordWrap

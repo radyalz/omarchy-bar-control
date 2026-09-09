@@ -243,22 +243,11 @@ Item {
     "omarchy.indicators": { "alwaysShow": true }
   })
 
-  // Widgets this bar loads from its own directory instead of the shared
-  // registry, so the change stays scoped to this bar. Each of these paints an
-  // island per item, so the slot must not paint one behind them.
-  readonly property var localWidgetOverrides: ({
-    "omarchy.workspaces": "widgets/IslandWorkspaces.qml",
-    "omarchy.indicators": "widgets/IslandIndicators.qml",
-    "omarchy.tray": "widgets/IslandTray.qml"
-  })
-
-  // Of those, the ones that paint an island per item and so must not also get
-  // a slot island behind them. The tray stays a single group island -- it just
-  // needs its width to track the drawer animation.
-  readonly property var selfIslandWidgets: ({
-    "omarchy.workspaces": true,
-    "omarchy.indicators": true
-  })
+  // Use the host registry for widgets so a fresh install does not depend on
+  // private widget copies from an older bar plugin. Slot-level island chrome
+  // remains owned by this bar and works with the stock Omarchy widgets.
+  readonly property var localWidgetOverrides: ({})
+  readonly property var selfIslandWidgets: ({})
 
   function localWidgetSource(moduleName) {
     var rel = root.localWidgetOverrides[root.canonicalWidgetId(moduleName)]

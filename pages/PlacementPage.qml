@@ -45,7 +45,7 @@ SettingsPage {
   ValueSlider {
     label: "Slide distance"
     from: 0
-    to: 150
+    to: 200
     stepSize: 5
     value: root.service ? root.service.slideDistancePercent : 100
     suffix: "%"

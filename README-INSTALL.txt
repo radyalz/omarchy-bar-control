@@ -1,29 +1,20 @@
 Radyalz Bar Control v0.2.3
 
-This is the renamed successor to Animated Autohide Bar v0.2.2.
-
-IMPORTANT FOR THE v0.2.2 -> v0.2.3 RENAME
-------------------------------------------
-Do not manually delete the old plugin directory first.
-
+INSTALL
+-------
 Run:
 
   ./install.sh
 
-The installer performs the old-version uninstall/migration safely:
-
-  1. Copies the inherited Islands Bar runtime files from the old working plugin.
-  2. Preserves settings.json.
-  3. Installs the renamed v0.2.3 files under:
-       ~/.config/omarchy/plugins/radyalz.bar-control
-  4. Replaces stale shell/plugin IDs.
-  5. Moves the old plugin directories out of the live plugin registry into:
-       ~/.local/state/radyalz-bar-control/legacy-<timestamp>/
-  6. Restarts the Omarchy shell.
+The installer can now install from a clean Omarchy system. It seeds the runtime
+from the currently installed Omarchy stock bar, then overlays Radyalz Bar
+Control. If Animated Autohide Bar v0.2.2 is still installed, its settings are
+migrated before the legacy plugin IDs are retired.
 
 SETTINGS ACCESS
 ---------------
-The installer asks one access-location question only. It is not a settings wizard.
+The installer asks one access-location question only. It is not a settings
+wizard.
 
   1. Left side of the bar
   2. Center of the bar
@@ -53,11 +44,16 @@ AUTOHIDE MODULE
 Autohide remains an activation module inside the permanent GUI. Turning it off
 keeps Radyalz Bar Control installed and keeps the bar visible.
 
-UNINSTALL v0.2.3
-----------------
+LOCAL DEVELOPMENT NOTES
+-----------------------
+The local docs/ directory is intentionally ignored by Git. It is reserved for
+AI workflow rules, packaging helpers, and generated ChatGPT export bundles.
+
+UNINSTALL
+---------
 Run:
 
   ./uninstall.sh
 
-This returns the active bar to omarchy.bar and removes the v0.2.3 plugin,
-launcher widget, and desktop launcher.
+This returns the active bar to omarchy.bar and removes the plugin, launcher
+widget, and desktop launcher.

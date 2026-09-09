@@ -10,7 +10,7 @@ SettingsPage {
 
   PageTitle {
     title: "Support"
-    description: "Project links stay disabled until the public GitHub repository is configured."
+    description: "Open the project repository or report a problem from here."
   }
 
   InfoCard {

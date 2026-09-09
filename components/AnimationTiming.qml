@@ -16,7 +16,7 @@ ColumnLayout {
   ValueSlider {
     label: "Slide duration"
     from: 50
-    to: 1500
+    to: 3000
     stepSize: 10
     value: root.service
       ? (root.showing ? root.service.showSlideDuration : root.service.hideSlideDuration)
@@ -36,7 +36,7 @@ ColumnLayout {
   ValueSlider {
     label: "Fade duration"
     from: 50
-    to: 1500
+    to: 3000
     stepSize: 10
     value: root.service
       ? (root.showing ? root.service.showFadeDuration : root.service.hideFadeDuration)

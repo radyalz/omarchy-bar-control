@@ -10,6 +10,7 @@ plugin="$HOME/.config/omarchy/plugins/$MAIN_ID"
 launcher_plugin="$HOME/.config/omarchy/plugins/$LAUNCHER_ID"
 old_plugin="$HOME/.config/omarchy/plugins/$OLD_MAIN_ID"
 old_launcher_plugin="$HOME/.config/omarchy/plugins/$OLD_LAUNCHER_ID"
+stock_bar="/usr/share/omarchy/shell/plugins/bar"
 here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 stamp="$(date +%Y%m%d-%H%M%S)"
 state_dir="$HOME/.local/state/radyalz-bar-control"
@@ -21,8 +22,9 @@ usage() {
   cat <<'USAGE'
 Usage: ./install.sh [--launcher left|center|right|app]
 
-Radyalz Bar Control v0.2.3 migrates the previous Animated Autohide Bar install
-when it is present, then retires the old plugin IDs.
+Radyalz Bar Control v0.2.3 can install fresh from the current Omarchy stock bar
+runtime. If an older Animated Autohide Bar install is present, its settings are
+migrated before the old plugin IDs are retired.
 
 The installer always creates a Linux application launcher as a recovery path.
 The --launcher option controls whether a settings button is also placed in the bar.
@@ -78,21 +80,26 @@ if [[ -z "$mode" ]]; then
   fi
 fi
 
-mkdir -p "$plugin" "$plugin/components" "$state_dir/backups"
+mkdir -p "$plugin" "$state_dir/backups"
 
-# Keep a safety backup of any existing v0.2.3+ install.
+# Keep a safety backup of any existing install before changing runtime files.
 if [[ -d "$plugin" ]] && find "$plugin" -mindepth 1 -maxdepth 1 -print -quit | grep -q .; then
   mkdir -p "$backup"
   cp -a "$plugin/." "$backup/"
 fi
 
-# v0.2.3 is a rename of the working v0.2.2 project. The previous install
-# contains the inherited Islands Bar runtime files (BarModel.js, widgets,
-# indicators, etc.) that the small GUI upgrade archive did not duplicate.
-# Migrate those files before retiring the old ID.
+# Seed the runtime. Prefer the previous working plugin when it exists so local
+# user state can migrate cleanly; otherwise use the stock Omarchy bar runtime.
 if [[ -d "$old_plugin" ]]; then
   printf 'Migrating runtime files from %s ...\n' "$OLD_MAIN_ID"
   cp -a "$old_plugin/." "$plugin/"
+elif [[ ! -f "$plugin/BarModel.js" ]]; then
+  if [[ ! -d "$stock_bar" ]]; then
+    printf 'Stock Omarchy bar runtime was not found at %s\n' "$stock_bar" >&2
+    exit 1
+  fi
+  printf 'Seeding runtime from the current Omarchy stock bar ...\n'
+  cp -a "$stock_bar/." "$plugin/"
 fi
 
 # Preserve the old user's settings under the new plugin path.
@@ -100,23 +107,16 @@ if [[ -f "$old_plugin/settings.json" && ! -f "$plugin/settings.json" ]]; then
   cp -a "$old_plugin/settings.json" "$plugin/settings.json"
 fi
 
-# Overlay the v0.2.3 files.
+# Overlay project-owned files and the modular settings UI.
 for file in Bar.qml Service.qml SettingsPanel.qml manifest.json; do
   cp -a "$here/$file" "$plugin/$file"
 done
-mkdir -p "$plugin/components"
-cp -a "$here/components/CurveEditor.qml" "$plugin/components/CurveEditor.qml"
+rm -rf "$plugin/components" "$plugin/pages"
+cp -a "$here/components" "$plugin/components"
+cp -a "$here/pages" "$plugin/pages"
 
-# Refuse to destroy the working old install if the inherited runtime is absent.
-missing=0
-for required in BarModel.js widgets; do
-  if [[ ! -e "$plugin/$required" ]]; then
-    printf 'Missing required runtime asset: %s\n' "$plugin/$required" >&2
-    missing=1
-  fi
-done
-if [[ "$missing" -ne 0 ]]; then
-  printf '\nInstallation stopped safely. Keep the old plugin installed and run this installer again.\n' >&2
+if [[ ! -f "$plugin/BarModel.js" ]]; then
+  printf 'Missing required runtime asset: %s\n' "$plugin/BarModel.js" >&2
   exit 1
 fi
 

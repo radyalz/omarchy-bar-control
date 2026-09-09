@@ -3,7 +3,7 @@
   "id": "radyalz.bar-control-launcher",
   "name": "Radyalz Bar Control Settings",
   "version": "0.2.3",
-  "author": "radyalz",
+  "author": "Radman Alizadeh (Radyalz)",
   "description": "Optional bar button that opens the Radyalz Bar Control settings panel.",
   "license": "MIT",
   "kinds": [

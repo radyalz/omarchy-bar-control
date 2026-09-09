@@ -53,7 +53,7 @@ SettingsPage {
   ValueSlider {
     label: "Screen-edge trigger thickness"
     from: 1
-    to: 30
+    to: 50
     stepSize: 1
     value: root.service ? root.service.triggerThickness : 5
     suffix: " px"

@@ -52,10 +52,9 @@ Item {
   property real islandOpacity: 1.0
 
   // --- Project/support metadata -------------------------------------------
-  // Leave these empty until the public repository is ready. The GUI handles
-  // the empty state cleanly instead of sending users to a broken URL.
-  property string repositoryUrl: ""
-  property string issuesUrl: ""
+  property string repositoryUrl:
+    "https://github.com/radyalz/omarchy-bar-control"
+  property string issuesUrl: repositoryUrl + "/issues"
   property string statusUrl: ""
 
   property string githubStatus: "Not configured"

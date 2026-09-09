@@ -3,7 +3,7 @@
   "id": "radyalz.bar-control",
   "name": "Radyalz Bar Control",
   "version": "0.2.3",
-  "author": "radyalz",
+  "author": "Radman Alizadeh (Radyalz)",
   "description": "Configurable Omarchy replacement bar with animated autohide, reveal controls, motion and curve editing, placement, appearance, diagnostics, and support tools.",
   "kinds": [
     "bar",
