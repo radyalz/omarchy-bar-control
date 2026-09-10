@@ -2,13 +2,15 @@ import QtQuick
 import QtQuick.Layouts
 import qs.Commons
 
-// Collapsible group. Header shows the title and, while collapsed, a short
-// summary of the current values; the body holds whatever is declared inside.
-// Collapsed by default so the page opens as a short list of presets and
-// section headers.
+// Collapsible group. The body is a Component that is only instantiated the
+// first time the section is opened, so a page full of collapsed sections
+// costs almost nothing to build.
 //
-// The body MUST stay a direct child of this ColumnLayout: the default-property
-// alias and the layout both depend on it. Do not wrap it in another Item.
+// Usage:
+//   ExpandableSection {
+//     title: "Reveal"
+//     Component { ColumnLayout { ValueSlider { ... } } }
+//   }
 ColumnLayout {
   id: root
 
@@ -18,7 +20,9 @@ ColumnLayout {
   property bool resettable: false
   signal resetRequested()
 
-  default property alias content: body.data
+  default property Component content: null
+  property bool everExpanded: false
+  onExpandedChanged: if (root.expanded) root.everExpanded = true
 
   Layout.fillWidth: true
   spacing: 0
@@ -31,7 +35,6 @@ ColumnLayout {
       ? Qt.alpha(Color.foreground, 0.06) : Qt.alpha(Color.foreground, 0.03)
     border.width: 1
     border.color: Qt.alpha(Color.foreground, 0.08)
-    Behavior on color { ColorAnimation { duration: 110 } }
 
     MouseArea {
       id: headerMouse
@@ -78,14 +81,14 @@ ColumnLayout {
     }
   }
 
-  ColumnLayout {
-    id: body
+  Loader {
     Layout.fillWidth: true
     Layout.leftMargin: 4
     Layout.rightMargin: 4
     Layout.topMargin: root.expanded ? 10 : 0
     Layout.bottomMargin: root.expanded ? 6 : 0
     visible: root.expanded
-    spacing: 12
+    active: root.everExpanded
+    sourceComponent: root.content
   }
 }

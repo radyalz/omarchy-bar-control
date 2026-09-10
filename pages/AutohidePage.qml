@@ -24,14 +24,16 @@ SettingsPage {
     resettable: true
     onResetRequested: if (root.service) root.service.resetRevealDefaults()
 
-    ValueSlider {
-      label: "Screen-edge trigger thickness"
-      description: "Width of the invisible strip along the edge that brings the bar back."
-      from: 1; to: 50; stepSize: 1; suffix: " px"
-      value: root.service ? root.service.triggerThickness : 5
-      enabled: root.service !== null
-      onEdited: function(value) {
-        if (root.service) root.service.triggerThickness = Math.round(value)
+    Component {
+      ValueSlider {
+        label: "Screen-edge trigger thickness"
+        description: "Width of the invisible strip along the edge that brings the bar back."
+        from: 1; to: 50; stepSize: 1; suffix: " px"
+        value: root.service ? root.service.triggerThickness : 5
+        enabled: root.service !== null
+        onEdited: function(value) {
+          if (root.service) root.service.triggerThickness = Math.round(value)
+        }
       }
     }
   }
@@ -43,7 +45,7 @@ SettingsPage {
     resettable: true
     onResetRequested: if (root.service) root.service.resetShowTimingDefaults()
 
-    AnimationTiming { service: root.service; showing: true }
+    Component { AnimationTiming { service: root.service; showing: true } }
   }
 
   ExpandableSection {
@@ -53,7 +55,7 @@ SettingsPage {
     resettable: true
     onResetRequested: if (root.service) root.service.resetHideTimingDefaults()
 
-    AnimationTiming { service: root.service; showing: false }
+    Component { AnimationTiming { service: root.service; showing: false } }
   }
 
   ExpandableSection {
@@ -62,7 +64,7 @@ SettingsPage {
     resettable: true
     onResetRequested: if (root.service) root.service.resetCurveDefaults()
 
-    MotionCurveSection { service: root.service }
+    Component { MotionCurveSection { service: root.service } }
   }
 
   RowLayout {

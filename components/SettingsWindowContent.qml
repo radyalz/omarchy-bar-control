@@ -53,13 +53,37 @@ Rectangle {
       color: root.sep
     }
     StackLayout {
+      id: stack
       Layout.fillWidth: true
       Layout.fillHeight: true
       currentIndex: root.currentPage
-      AutohidePage { service: root.service }
-      BarPage { service: root.service }
-      DiagnosticsPage { service: root.service }
-      AboutSupportPage { service: root.service }
+
+      // Each page is built the first time it is opened, then kept. Opening the
+      // window only pays for the first page.
+      Loader {
+        property bool seen: false
+        active: stack.currentIndex === 0 || seen
+        onActiveChanged: if (active) seen = true
+        sourceComponent: Component { AutohidePage { service: root.service } }
+      }
+      Loader {
+        property bool seen: false
+        active: stack.currentIndex === 1 || seen
+        onActiveChanged: if (active) seen = true
+        sourceComponent: Component { BarPage { service: root.service } }
+      }
+      Loader {
+        property bool seen: false
+        active: stack.currentIndex === 2 || seen
+        onActiveChanged: if (active) seen = true
+        sourceComponent: Component { DiagnosticsPage { service: root.service } }
+      }
+      Loader {
+        property bool seen: false
+        active: stack.currentIndex === 3 || seen
+        onActiveChanged: if (active) seen = true
+        sourceComponent: Component { AboutSupportPage { service: root.service } }
+      }
     }
   }
 
