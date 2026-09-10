@@ -8,6 +8,7 @@ Rectangle {
   property var pageNames: []
   property int currentPage: 0
   property var service: null
+  property bool sidebarCollapsed: false
   signal pageSelected(int index)
   signal closeRequested()
 
@@ -19,12 +20,24 @@ Rectangle {
 
   RowLayout {
     anchors.fill: parent; spacing: 0
+
     SettingsSidebar {
-      Layout.preferredWidth: 178; Layout.fillHeight: true
+      Layout.preferredWidth: root.sidebarCollapsed ? 0 : 178
+      Layout.fillHeight: true
+      clip: true
+      visible: Layout.preferredWidth > 2
       pageNames: root.pageNames; currentPage: root.currentPage; service: root.service
       onPageSelected: function(index) { root.pageSelected(index) }
+      onCollapseRequested: root.sidebarCollapsed = true
+      Behavior on Layout.preferredWidth {
+        NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+      }
     }
-    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: Qt.rgba(1, 1, 1, 0.065) }
+    Rectangle {
+      Layout.preferredWidth: 1; Layout.fillHeight: true
+      visible: !root.sidebarCollapsed
+      color: Qt.rgba(1, 1, 1, 0.065)
+    }
     StackLayout {
       Layout.fillWidth: true; Layout.fillHeight: true; currentIndex: root.currentPage
       AutohidePage { service: root.service }
@@ -33,6 +46,16 @@ Rectangle {
       AboutSupportPage { service: root.service }
     }
   }
+
+  IconButton {
+    anchors.top: parent.top; anchors.left: parent.left
+    anchors.topMargin: 10; anchors.leftMargin: 10
+    visible: root.sidebarCollapsed
+    icon: "☰"
+    tooltip: "Show sidebar"
+    onClicked: root.sidebarCollapsed = false
+  }
+
   GlassButton {
     anchors.top: parent.top; anchors.right: parent.right
     anchors.topMargin: 12; anchors.rightMargin: 12

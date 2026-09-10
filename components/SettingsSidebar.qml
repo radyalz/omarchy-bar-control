@@ -7,16 +7,29 @@ Rectangle {
   property int currentPage: 0
   property var service: null
   signal pageSelected(int index)
+  signal collapseRequested()
   color: Qt.rgba(1, 1, 1, 0.018)
 
   ColumnLayout {
     anchors.fill: parent
     anchors.margins: 14
     spacing: 7
-    ColumnLayout {
-      Layout.fillWidth: true; spacing: 2
-      Text { text: "Radyalz"; color: "#f5f7fc"; font.pixelSize: 17; font.weight: Font.DemiBold }
-      Text { text: "BAR CONTROL"; color: "#75839c"; font.pixelSize: 9; font.bold: true; font.letterSpacing: 1.4 }
+    RowLayout {
+      Layout.fillWidth: true
+      spacing: 8
+      IconButton {
+        icon: "☰"
+        tooltip: "Hide sidebar"
+        onClicked: root.collapseRequested()
+      }
+      Text {
+        Layout.fillWidth: true
+        text: "Bar Control"
+        color: "#f5f7fc"
+        font.pixelSize: 15
+        font.weight: Font.DemiBold
+        elide: Text.ElideRight
+      }
     }
     Rectangle { Layout.fillWidth: true; height: 1; color: Qt.rgba(1, 1, 1, 0.07) }
     Repeater {
