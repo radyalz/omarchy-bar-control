@@ -58,6 +58,14 @@ Item {
   property int barThickness: 32
   property int iconScale: 100
 
+  // --- Colors ----------------------------------------------------------
+  // Off by default so the bar tracks the active Omarchy theme.
+  property bool colorOverrideEnabled: false
+  property string barColor: "#1e1e2e"
+  property string islandColor: "#1e1e2e"
+  property string textColor: "#cdd6f4"
+  property string accentColor: "#89b4fa"
+
   // --- Project/support metadata -------------------------------------------
   property string repositoryUrl:
     "https://github.com/radyalz/omarchy-bar-control"
@@ -129,6 +137,11 @@ Item {
 
   function allowed(value, values, fallback) {
     return values.indexOf(value) !== -1 ? value : fallback
+  }
+
+  function hexColor(value, fallback) {
+    return /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(String(value))
+      ? String(value) : fallback
   }
 
   function loadSettings(raw) {
@@ -223,6 +236,13 @@ Item {
         root.clampInt(data.barThickness, 18, 96, root.barThickness)
       root.iconScale =
         root.clampInt(data.iconScale, 60, 180, root.iconScale)
+
+      if (typeof data.colorOverrideEnabled === "boolean")
+        root.colorOverrideEnabled = data.colorOverrideEnabled
+      root.barColor = root.hexColor(data.barColor, root.barColor)
+      root.islandColor = root.hexColor(data.islandColor, root.islandColor)
+      root.textColor = root.hexColor(data.textColor, root.textColor)
+      root.accentColor = root.hexColor(data.accentColor, root.accentColor)
     }
 
     root.hydrating = false
@@ -273,7 +293,12 @@ Item {
       islandOpacity: root.islandOpacity,
       barSizeOverrideEnabled: root.barSizeOverrideEnabled,
       barThickness: root.barThickness,
-      iconScale: root.iconScale
+      iconScale: root.iconScale,
+      colorOverrideEnabled: root.colorOverrideEnabled,
+      barColor: root.barColor,
+      islandColor: root.islandColor,
+      textColor: root.textColor,
+      accentColor: root.accentColor
     }
     for (var key in known)
       current[key] = known[key]
@@ -398,6 +423,14 @@ Item {
     root.iconScale = 100
   }
 
+  function resetColorDefaults() {
+    root.colorOverrideEnabled = false
+    root.barColor = "#1e1e2e"
+    root.islandColor = "#1e1e2e"
+    root.textColor = "#cdd6f4"
+    root.accentColor = "#89b4fa"
+  }
+
   function refreshIssueStatus() {
     if (!root.statusUrl) {
       root.githubStatus = "Not configured"
@@ -488,5 +521,10 @@ Item {
   onBarSizeOverrideEnabledChanged: root.scheduleSave()
   onBarThicknessChanged: root.scheduleSave()
   onIconScaleChanged: root.scheduleSave()
+  onColorOverrideEnabledChanged: root.scheduleSave()
+  onBarColorChanged: root.scheduleSave()
+  onIslandColorChanged: root.scheduleSave()
+  onTextColorChanged: root.scheduleSave()
+  onAccentColorChanged: root.scheduleSave()
 
 }

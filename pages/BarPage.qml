@@ -83,6 +83,58 @@ SettingsPage {
     }
   }
 
+  ExpandableSection {
+    title: "Colors"
+    summary: root.service && root.service.colorOverrideEnabled ? "Custom" : "Theme default"
+    resettable: true
+    onResetRequested: if (root.service) root.service.resetColorDefaults()
+
+    RowLayout {
+      Layout.fillWidth: true
+      ColumnLayout {
+        Layout.fillWidth: true
+        spacing: 2
+        Text { text: "Custom colors"; color: "#d7dce6"; font.pixelSize: 12 }
+        Text {
+          text: "Override the theme colors for the bar. A few accent uses may not follow."
+          color: "#7f8793"; font.pixelSize: 10
+        }
+      }
+      GlassToggle {
+        checked: root.service ? root.service.colorOverrideEnabled : false
+        enabled: root.service !== null
+        onToggled: function(value) {
+          if (root.service) root.service.colorOverrideEnabled = value
+        }
+      }
+    }
+
+    ColorField {
+      label: "Bar background"
+      value: root.service ? root.service.barColor : "#1e1e2e"
+      enabled: root.service && root.service.colorOverrideEnabled
+      onEdited: function(value) { if (root.service) root.service.barColor = value }
+    }
+    ColorField {
+      label: "Island background"
+      value: root.service ? root.service.islandColor : "#1e1e2e"
+      enabled: root.service && root.service.colorOverrideEnabled
+      onEdited: function(value) { if (root.service) root.service.islandColor = value }
+    }
+    ColorField {
+      label: "Foreground / text"
+      value: root.service ? root.service.textColor : "#cdd6f4"
+      enabled: root.service && root.service.colorOverrideEnabled
+      onEdited: function(value) { if (root.service) root.service.textColor = value }
+    }
+    ColorField {
+      label: "Accent / active"
+      value: root.service ? root.service.accentColor : "#89b4fa"
+      enabled: root.service && root.service.colorOverrideEnabled
+      onEdited: function(value) { if (root.service) root.service.accentColor = value }
+    }
+  }
+
   RowLayout {
     Layout.fillWidth: true
     Item { Layout.fillWidth: true }

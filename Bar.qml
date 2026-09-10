@@ -62,6 +62,12 @@ Item {
     property int barThickness: 32
     property int iconScale: 100
 
+    property bool colorOverrideEnabled: false
+    property string barColor: "#1e1e2e"
+    property string islandColor: "#1e1e2e"
+    property string textColor: "#cdd6f4"
+    property string accentColor: "#89b4fa"
+
     // Empty / unset means follow shell.json.
     property string positionOverride: ""
     property bool transparentOverrideSet: false
@@ -87,6 +93,10 @@ Item {
   property string omarchyConfigDir: home + "/.config/omarchy"
   readonly property string autohideSettingsPath:
     home + "/.config/omarchy/radyalz-bar-control.json"
+
+  function isHexColor(value) {
+    return /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(String(value))
+  }
 
   function loadAutohideSettings(raw) {
     var data = null
@@ -159,6 +169,13 @@ Item {
       autohideSettings.barThickness = Math.max(18, Math.min(96, Math.round(Number(data.barThickness))))
     if (isFinite(Number(data.iconScale)))
       autohideSettings.iconScale = Math.max(60, Math.min(180, Math.round(Number(data.iconScale))))
+
+    if (typeof data.colorOverrideEnabled === "boolean")
+      autohideSettings.colorOverrideEnabled = data.colorOverrideEnabled
+    if (isHexColor(data.barColor)) autohideSettings.barColor = data.barColor
+    if (isHexColor(data.islandColor)) autohideSettings.islandColor = data.islandColor
+    if (isHexColor(data.textColor)) autohideSettings.textColor = data.textColor
+    if (isHexColor(data.accentColor)) autohideSettings.accentColor = data.accentColor
 
     var positions = ["top", "bottom", "left", "right"]
     if (positions.indexOf(data.position) !== -1)
@@ -237,20 +254,22 @@ Item {
   property string fontFamily: Style.font.family
   // Bound to the central Color singleton so the bar tracks shell.toml's
   // [bar] section. Property names kept for the rest of this file's bindings.
-  property color themeForeground: Color.bar.text
+  readonly property bool customColors: autohideSettings.colorOverrideEnabled
+  property color themeForeground: customColors ? autohideSettings.textColor : Color.bar.text
   property color themeContrastForeground: Color.background
-  property color transparentForeground: Color.bar.text
+  property color transparentForeground: customColors ? autohideSettings.textColor : Color.bar.text
+  property color accent: customColors ? autohideSettings.accentColor : Color.accent
   property color foreground: themeForeground
   property color barForeground: useTransparentForeground ? transparentForeground : themeForeground
   property bool foregroundAnimationEnabled: true
-  property color background: Color.bar.background
-  property color urgent: Color.bar.active
+  property color background: customColors ? autohideSettings.barColor : Color.bar.background
+  property color urgent: customColors ? autohideSettings.accentColor : Color.bar.active
 
   // ------------------------------------------------------------- islands
   // Every widget floats on its own rounded island instead of sharing one
   // edge-to-edge fill. Colour tracks the theme's [bar] background, so every
   // theme works with no per-theme setup. Tune the geometry here.
-  property color islandBackground: Color.bar.background
+  property color islandBackground: customColors ? autohideSettings.islandColor : Color.bar.background
   readonly property bool customIslandAppearance:
     root.autohideService && root.autohideService.appearanceOverrideEnabled
 
@@ -1773,7 +1792,7 @@ Item {
       y: targetRect ? Math.round(targetRect.y) : 0
       width: targetRect ? targetRect.width : 0
       height: targetRect ? targetRect.height : 0
-      color: Color.accent
+      color: root.accent
       radius: Math.min(width, height) / 2
     }
   }
@@ -2219,7 +2238,7 @@ Item {
 
       visible: opacity > 0
       opacity: slot.panelOpen && !slot.dragSource ? 0.9 : 0
-      color: Color.accent
+      color: root.accent
       radius: Math.min(width, height) / 2
       width: root.vertical ? Style.space(2) : slot.panelIndicatorExtent
       height: root.vertical ? slot.panelIndicatorExtent : Style.space(2)
