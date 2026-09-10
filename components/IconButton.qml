@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls as QQC
+import qs.Ui
 
 // Small square icon button with a hover tooltip. Used where a text button
 // would be too bulky (e.g. a section's Reset control).
@@ -33,8 +33,7 @@ Rectangle {
     onClicked: root.clicked()
   }
 
-  QQC.ToolTip {
-    parent: root
+  PanelToolTip {
     visible: root.tooltip !== "" && mouse.containsMouse
     text: root.tooltip
     delay: 350
