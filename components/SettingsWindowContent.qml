@@ -56,10 +56,12 @@ Rectangle {
     onClicked: root.sidebarCollapsed = false
   }
 
-  GlassButton {
+  IconButton {
     anchors.top: parent.top; anchors.right: parent.right
-    anchors.topMargin: 12; anchors.rightMargin: 12
-    text: "×"; onClicked: root.closeRequested()
+    anchors.topMargin: 10; anchors.rightMargin: 10
+    icon: "✕"
+    tooltip: "Close"
+    onClicked: root.closeRequested()
   }
   FocusScope { anchors.fill: parent; focus: true; Keys.onEscapePressed: root.closeRequested() }
 }
