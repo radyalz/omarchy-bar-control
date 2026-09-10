@@ -29,23 +29,14 @@ ColumnLayout {
     columnSpacing: 12
     rowSpacing: 6
 
-    ColumnLayout {
+    Text {
       Layout.fillWidth: root.stacked
       Layout.preferredWidth: root.stacked ? -1 : 172
-      spacing: 1
-      Text {
-        text: root.label
-        color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
-        font.pixelSize: 12
-      }
-      Text {
-        visible: root.description !== ""
-        Layout.fillWidth: true
-        text: root.description
-        color: root.enabled ? Qt.alpha(Color.foreground, 0.6) : Qt.alpha(Color.foreground, 0.35)
-        font.pixelSize: 10
-        wrapMode: Text.WordWrap
-      }
+      Layout.alignment: Qt.AlignVCenter
+      text: root.label
+      color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
+      font.pixelSize: 12
+      wrapMode: Text.WordWrap
     }
 
     QQC.Slider {
@@ -113,5 +104,15 @@ ColumnLayout {
       enabled: root.enabled
       onEdited: function(v) { root.edited(v) }
     }
+  }
+
+  // Full-width so the explanation is never squeezed into the label column.
+  Text {
+    visible: root.description !== ""
+    Layout.fillWidth: true
+    text: root.description
+    color: root.enabled ? Qt.alpha(Color.foreground, 0.6) : Qt.alpha(Color.foreground, 0.35)
+    font.pixelSize: 10
+    wrapMode: Text.WordWrap
   }
 }

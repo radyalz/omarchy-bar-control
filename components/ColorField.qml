@@ -2,10 +2,11 @@ import QtQuick
 import QtQuick.Layouts
 import qs.Commons
 
-// One colour row: label (+ optional description), a preview swatch, and a hex
-// text field. Accepts #rrggbb or #aarrggbb; the field border turns red while
-// the text is not a valid hex colour, and only valid values are emitted.
-RowLayout {
+// One colour row: label + swatch + hex field, with the description on its own
+// full-width line below. Accepts #rrggbb or #aarrggbb; the hex border turns red
+// while the text is not a valid colour, and only valid values are emitted.
+// Clicking the swatch opens an HSV picker.
+ColumnLayout {
   id: root
   property string label: ""
   property string description: ""
@@ -13,7 +14,7 @@ RowLayout {
   signal edited(string value)
 
   Layout.fillWidth: true
-  spacing: 12
+  spacing: 3
 
   function valid(text) {
     return /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(String(text))
@@ -33,91 +34,95 @@ RowLayout {
 
   onValueChanged: if (!hexInput.activeFocus) hexInput.text = root.value
 
-  ColumnLayout {
+  RowLayout {
     Layout.fillWidth: true
-    spacing: 2
+    spacing: 12
+
     Text {
+      Layout.fillWidth: true
       text: root.label
       color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
       font.pixelSize: 12
+      elide: Text.ElideRight
     }
-    Text {
-      visible: root.description !== ""
-      Layout.fillWidth: true
-      text: root.description
-      color: Qt.alpha(Color.foreground, root.enabled ? 0.6 : 0.35)
-      font.pixelSize: 10
-      wrapMode: Text.WordWrap
+
+    Rectangle {
+      id: swatch
+      Layout.alignment: Qt.AlignVCenter
+      implicitWidth: 22
+      implicitHeight: 22
+      radius: 4
+      opacity: root.enabled ? 1 : 0.4
+      color: root.valid(root.value) ? root.value : "transparent"
+      border.width: 1
+      border.color: picker.opened ? Color.accent : Qt.alpha(Color.foreground, 0.2)
+
+      MouseArea {
+        anchors.fill: parent
+        enabled: root.enabled
+        cursorShape: Qt.PointingHandCursor
+        onClicked: picker.opened ? picker.close() : picker.open()
+      }
+
+      ColorPicker {
+        id: picker
+        value: root.value
+        onPicked: function(hex) { root.edited(hex) }
+
+        // Position relative to the swatch, but flip left / above when the popup
+        // would run off the window instead of clipping at the edge.
+        readonly property point winPos: swatch.mapToItem(null, 0, 0)
+        readonly property real winW: swatch.Window.width > 0 ? swatch.Window.width : 820
+        readonly property real winH: swatch.Window.height > 0 ? swatch.Window.height : 620
+        x: {
+          var overRight = (winPos.x + implicitWidth) - (winW - 10)
+          return overRight > 0 ? -overRight : 0
+        }
+        y: {
+          var below = swatch.height + 6
+          var overBottom = (winPos.y + below + implicitHeight) - (winH - 10)
+          return overBottom > 0 ? -(implicitHeight + 6) : below
+        }
+      }
+    }
+
+    Rectangle {
+      Layout.alignment: Qt.AlignVCenter
+      implicitWidth: 100
+      implicitHeight: 26
+      radius: 4
+      color: root.enabled ? Qt.alpha(Color.foreground, 0.06) : Qt.alpha(Color.foreground, 0.03)
+      border.width: 1
+      border.color: hexInput.activeFocus
+        ? Color.accent
+        : (root.valid(hexInput.text) ? Qt.alpha(Color.foreground, 0.1) : Color.urgent)
+
+      TextInput {
+        id: hexInput
+        anchors.fill: parent
+        anchors.leftMargin: 8
+        anchors.rightMargin: 8
+        verticalAlignment: TextInput.AlignVCenter
+        clip: true
+        enabled: root.enabled
+        color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
+        selectionColor: Color.accent
+        font.pixelSize: 11
+        selectByMouse: true
+        text: root.value
+        onEditingFinished: root.commit()
+        Keys.onReturnPressed: root.commit()
+        Keys.onEnterPressed: root.commit()
+      }
     }
   }
 
-  Rectangle {
-    id: swatch
-    Layout.alignment: Qt.AlignVCenter
-    implicitWidth: 22
-    implicitHeight: 22
-    radius: 4
-    opacity: root.enabled ? 1 : 0.4
-    color: root.valid(root.value) ? root.value : "transparent"
-    border.width: 1
-    border.color: picker.opened ? Color.accent : Qt.alpha(Color.foreground, 0.2)
-
-    MouseArea {
-      anchors.fill: parent
-      enabled: root.enabled
-      cursorShape: Qt.PointingHandCursor
-      onClicked: picker.opened ? picker.close() : picker.open()
-    }
-
-    ColorPicker {
-      id: picker
-      value: root.value
-      onPicked: function(hex) { root.edited(hex) }
-
-      // Position relative to the swatch, but flip left / above when the popup
-      // would run off the window instead of clipping at the edge.
-      readonly property point winPos: swatch.mapToItem(null, 0, 0)
-      readonly property real winW: swatch.Window.width > 0 ? swatch.Window.width : 820
-      readonly property real winH: swatch.Window.height > 0 ? swatch.Window.height : 620
-      x: {
-        var overRight = (winPos.x + implicitWidth) - (winW - 10)
-        return overRight > 0 ? -overRight : 0
-      }
-      y: {
-        var below = swatch.height + 6
-        var overBottom = (winPos.y + below + implicitHeight) - (winH - 10)
-        return overBottom > 0 ? -(implicitHeight + 6) : below
-      }
-    }
-  }
-
-  Rectangle {
-    Layout.alignment: Qt.AlignVCenter
-    implicitWidth: 100
-    implicitHeight: 26
-    radius: 4
-    color: root.enabled ? Qt.alpha(Color.foreground, 0.06) : Qt.alpha(Color.foreground, 0.03)
-    border.width: 1
-    border.color: hexInput.activeFocus
-      ? Color.accent
-      : (root.valid(hexInput.text) ? Qt.alpha(Color.foreground, 0.1) : Color.urgent)
-
-    TextInput {
-      id: hexInput
-      anchors.fill: parent
-      anchors.leftMargin: 8
-      anchors.rightMargin: 8
-      verticalAlignment: TextInput.AlignVCenter
-      clip: true
-      enabled: root.enabled
-      color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
-      selectionColor: Color.accent
-      font.pixelSize: 11
-      selectByMouse: true
-      text: root.value
-      onEditingFinished: root.commit()
-      Keys.onReturnPressed: root.commit()
-      Keys.onEnterPressed: root.commit()
-    }
+  Text {
+    visible: root.description !== ""
+    Layout.fillWidth: true
+    text: root.description
+    color: Qt.alpha(Color.foreground, root.enabled ? 0.6 : 0.35)
+    font.pixelSize: 10
+    wrapMode: Text.WordWrap
   }
 }
