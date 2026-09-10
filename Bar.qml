@@ -1317,6 +1317,22 @@ Item {
     }
   }
 
+  // Flash the reveal-edge strip in the theme accent colour for a moment
+  // whenever the trigger thickness changes, so the user can see the zone they
+  // are sizing. Armed a bit after startup so the initial load does not flash.
+  property bool triggerPreviewActive: false
+  property bool triggerPreviewArmed: false
+  Timer { interval: 1500; running: true; repeat: false; onTriggered: root.triggerPreviewArmed = true }
+  Timer { id: triggerPreviewTimer; interval: 1300; repeat: false; onTriggered: root.triggerPreviewActive = false }
+  Connections {
+    target: autohideSettings
+    function onTriggerThicknessChanged() {
+      if (!root.triggerPreviewArmed) return
+      root.triggerPreviewActive = true
+      triggerPreviewTimer.restart()
+    }
+  }
+
   Variants {
     model: Quickshell.screens
 
@@ -1327,6 +1343,16 @@ Item {
         visible: root.autohideService && root.autohideService.enabled
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
+
+        Rectangle {
+          anchors.fill: parent
+          color: Qt.alpha(Color.accent, 0.28)
+          border.width: 1
+          border.color: Qt.alpha(Color.accent, 0.65)
+          visible: opacity > 0.01
+          opacity: root.triggerPreviewActive ? 1 : 0
+          Behavior on opacity { NumberAnimation { duration: 200 } }
+        }
 
         implicitWidth:
           root.vertical && root.autohideService
