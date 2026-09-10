@@ -20,7 +20,13 @@ SettingsPage {
     title: "Surface"
     summary: root.service && root.service.currentTransparent ? "Transparent" : "Solid"
 
-    AppearanceModeCard { service: root.service }
+    ToggleRow {
+      label: "Transparent bar"
+      description: "Let the wallpaper show through the bar surface."
+      checked: root.service ? root.service.currentTransparent : false
+      enabled: root.service !== null
+      onToggled: function(value) { if (root.service) root.service.setTransparent(value) }
+    }
   }
 
   ExpandableSection {
@@ -28,6 +34,16 @@ SettingsPage {
     summary: root.service && root.service.appearanceOverrideEnabled ? "Custom" : "Theme default"
     resettable: true
     onResetRequested: if (root.service) root.service.resetIslandGeometryDefaults()
+
+    ToggleRow {
+      label: "Custom island appearance"
+      description: "Enable the geometry and opacity controls below."
+      checked: root.service ? root.service.appearanceOverrideEnabled : false
+      enabled: root.service !== null
+      onToggled: function(value) {
+        if (root.service) root.service.appearanceOverrideEnabled = value
+      }
+    }
 
     AppearanceGeometry { service: root.service }
   }
@@ -40,23 +56,13 @@ SettingsPage {
     resettable: true
     onResetRequested: if (root.service) root.service.resetBarSizeDefaults()
 
-    RowLayout {
-      Layout.fillWidth: true
-      ColumnLayout {
-        Layout.fillWidth: true
-        spacing: 2
-        Text { text: "Custom bar size"; color: "#d7dce6"; font.pixelSize: 12 }
-        Text {
-          text: "Override the theme's bar thickness and icon scale."
-          color: "#7f8793"; font.pixelSize: 10
-        }
-      }
-      GlassToggle {
-        checked: root.service ? root.service.barSizeOverrideEnabled : false
-        enabled: root.service !== null
-        onToggled: function(value) {
-          if (root.service) root.service.barSizeOverrideEnabled = value
-        }
+    ToggleRow {
+      label: "Custom bar size"
+      description: "Override the theme's bar thickness and icon scale."
+      checked: root.service ? root.service.barSizeOverrideEnabled : false
+      enabled: root.service !== null
+      onToggled: function(value) {
+        if (root.service) root.service.barSizeOverrideEnabled = value
       }
     }
 
@@ -89,23 +95,13 @@ SettingsPage {
     resettable: true
     onResetRequested: if (root.service) root.service.resetColorDefaults()
 
-    RowLayout {
-      Layout.fillWidth: true
-      ColumnLayout {
-        Layout.fillWidth: true
-        spacing: 2
-        Text { text: "Custom colors"; color: "#d7dce6"; font.pixelSize: 12 }
-        Text {
-          text: "Override the theme colors for the bar. A few accent uses may not follow."
-          color: "#7f8793"; font.pixelSize: 10
-        }
-      }
-      GlassToggle {
-        checked: root.service ? root.service.colorOverrideEnabled : false
-        enabled: root.service !== null
-        onToggled: function(value) {
-          if (root.service) root.service.colorOverrideEnabled = value
-        }
+    ToggleRow {
+      label: "Custom colors"
+      description: "Override the theme colors for the bar. A few accent uses may not follow."
+      checked: root.service ? root.service.colorOverrideEnabled : false
+      enabled: root.service !== null
+      onToggled: function(value) {
+        if (root.service) root.service.colorOverrideEnabled = value
       }
     }
 
