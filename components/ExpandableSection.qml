@@ -5,7 +5,10 @@ import qs.Commons
 // Collapsible group. Header shows the title and, while collapsed, a short
 // summary of the current values; the body holds whatever is declared inside.
 // Collapsed by default so the page opens as a short list of presets and
-// section headers. The body animates its height + fades.
+// section headers.
+//
+// The body MUST stay a direct child of this ColumnLayout: the default-property
+// alias and the layout both depend on it. Do not wrap it in another Item.
 ColumnLayout {
   id: root
 
@@ -15,8 +18,6 @@ ColumnLayout {
   property bool resettable: false
   signal resetRequested()
 
-  // Keep `body` a DIRECT child of this ColumnLayout: the default-property alias
-  // and the layout both depend on that. Do not wrap it in another Item.
   default property alias content: body.data
 
   Layout.fillWidth: true
@@ -84,20 +85,9 @@ ColumnLayout {
     Layout.rightMargin: 4
     Layout.topMargin: root.expanded ? 10 : 0
     Layout.bottomMargin: root.expanded ? 6 : 0
-    // Animate the height between 0 and the natural content height; clip so the
-    // content is hidden while collapsing. maximumHeight pins it so the parent
-    // layout does not stretch it back.
-    Layout.preferredHeight: root.expanded ? body.implicitHeight : 0
-    Layout.maximumHeight: root.expanded ? body.implicitHeight : 0
-    clip: true
+    visible: root.expanded
     opacity: root.expanded ? 1 : 0
     spacing: 12
-    Behavior on Layout.preferredHeight {
-      NumberAnimation { duration: 170; easing.type: Easing.OutCubic }
-    }
-    Behavior on Layout.maximumHeight {
-      NumberAnimation { duration: 170; easing.type: Easing.OutCubic }
-    }
     Behavior on opacity { NumberAnimation { duration: 130 } }
   }
 }

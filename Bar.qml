@@ -205,20 +205,26 @@ Item {
   function applyScales() {
     if (root.themeFontBaseSize <= 0) return
 
-    var iconScale = autohideSettings.barSizeOverrideEnabled
-      ? Math.max(0.6, Math.min(1.8, autohideSettings.iconScale / 100)) : 1
-    var next = {}
-    var existing = Style.barOverrides || ({})
-    for (var k in existing) next[k] = existing[k]
-    for (var token in root.iconTokenBase) {
-      if (iconScale === 1) delete next[token]
-      else next[token] = Math.round(root.iconTokenBase[token] * iconScale)
-    }
-    Style.barOverrides = next
+    // Guarded: these mutate the shared Style singleton. If a Quickshell/Omarchy
+    // version rejects a write, don't let it take the bar down.
+    try {
+      var iconScale = autohideSettings.barSizeOverrideEnabled
+        ? Math.max(0.6, Math.min(1.8, autohideSettings.iconScale / 100)) : 1
+      var next = {}
+      var existing = Style.barOverrides || ({})
+      for (var k in existing) next[k] = existing[k]
+      for (var token in root.iconTokenBase) {
+        if (iconScale === 1) delete next[token]
+        else next[token] = Math.round(root.iconTokenBase[token] * iconScale)
+      }
+      Style.barOverrides = next
 
-    var fontScale = autohideSettings.barSizeOverrideEnabled
-      ? Math.max(0.6, Math.min(1.8, autohideSettings.fontScale / 100)) : 1
-    Style.fontBaseSize = Math.max(6, Math.round(root.themeFontBaseSize * fontScale))
+      var fontScale = autohideSettings.barSizeOverrideEnabled
+        ? Math.max(0.6, Math.min(1.8, autohideSettings.fontScale / 100)) : 1
+      Style.fontBaseSize = Math.max(6, Math.round(root.themeFontBaseSize * fontScale))
+    } catch (error) {
+      console.warn("radyalz-bar-control: applyScales failed:", error)
+    }
   }
 
   function setAutohideEdgeHovered(hovered) {

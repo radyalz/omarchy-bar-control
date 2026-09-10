@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Window
 import qs.Commons
 
 // One colour row: label + swatch + hex field, with the description on its own
