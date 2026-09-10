@@ -2,9 +2,13 @@ import QtQuick
 import QtQuick.Controls as QQC
 import QtQuick.Layouts
 
+// One compact setting row: label (+ optional description) on the left, a slider
+// in the middle, an editable number field on the right. Collapses to a stack
+// when the row is too narrow to hold all three side by side.
 ColumnLayout {
   id: root
   property string label: ""
+  property string description: ""
   property real from: 0
   property real to: 100
   property real stepSize: 1
@@ -12,58 +16,101 @@ ColumnLayout {
   property int decimals: 0
   property string suffix: ""
   signal edited(real value)
-  Layout.fillWidth: true
-  spacing: 5
 
-  RowLayout {
+  Layout.fillWidth: true
+  spacing: 4
+
+  readonly property bool stacked: root.width > 0 && root.width < 430
+
+  GridLayout {
     Layout.fillWidth: true
-    Text { text: root.label; color: root.enabled ? "#cbd1dc" : "#626a78"; font.pixelSize: 12 }
-    Item { Layout.fillWidth: true }
-    Rectangle {
-      implicitWidth: valueLabel.implicitWidth + 14; implicitHeight: 24; radius: 8
-      color: Qt.rgba(1, 1, 1, 0.055); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.07)
+    columns: root.stacked ? 1 : 3
+    columnSpacing: 12
+    rowSpacing: 6
+
+    ColumnLayout {
+      Layout.fillWidth: root.stacked
+      Layout.preferredWidth: root.stacked ? -1 : 172
+      spacing: 1
       Text {
-        id: valueLabel; anchors.centerIn: parent
-        text: Number(root.value).toFixed(root.decimals) + root.suffix
-        color: root.enabled ? "#aeb8cb" : "#626a78"; font.pixelSize: 10
+        text: root.label
+        color: root.enabled ? "#cbd1dc" : "#626a78"
+        font.pixelSize: 12
+      }
+      Text {
+        visible: root.description !== ""
+        Layout.fillWidth: true
+        text: root.description
+        color: root.enabled ? "#828b9b" : "#5c636f"
+        font.pixelSize: 10
+        wrapMode: Text.WordWrap
       }
     }
-  }
-  QQC.Slider {
-    id: slider
-    Layout.fillWidth: true
-    // The custom handle/background are bare Rectangles with no implicit size,
-    // so without this the control collapses to ~0 height and there is nothing
-    // to grab. Give it a real hit area.
-    implicitHeight: 24
-    topPadding: 0
-    bottomPadding: 0
-    from: root.from; to: root.to; stepSize: root.stepSize
-    enabled: root.enabled; onMoved: root.edited(value)
 
-    // Track root.value while the user is not dragging. A plain
-    // `value: root.value` binding is destroyed the first time the handle is
-    // moved, after which resets, presets and external edits stop moving it.
-    Binding {
-      target: slider
-      property: "value"
+    QQC.Slider {
+      id: slider
+      Layout.fillWidth: true
+      implicitHeight: 24
+      topPadding: 0
+      bottomPadding: 0
+      from: root.from
+      to: root.to
+      stepSize: root.stepSize
+      snapMode: QQC.Slider.SnapAlways
+      enabled: root.enabled
+      onMoved: root.edited(value)
+
+      // Track root.value while the user is not dragging. A plain
+      // `value: root.value` binding is destroyed the first time the handle is
+      // moved, after which resets, presets and external edits stop moving it.
+      Binding {
+        target: slider
+        property: "value"
+        value: root.value
+        when: !slider.pressed
+        restoreMode: Binding.RestoreBinding
+      }
+
+      background: Rectangle {
+        x: slider.leftPadding
+        y: slider.topPadding + slider.availableHeight / 2 - height / 2
+        implicitWidth: 160
+        implicitHeight: 5
+        width: slider.availableWidth
+        height: 5
+        radius: 2
+        color: Qt.rgba(1, 1, 1, 0.09)
+        Rectangle {
+          width: parent.width * slider.visualPosition
+          height: parent.height
+          radius: 2
+          color: "#829cff"
+        }
+      }
+      handle: Rectangle {
+        x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
+        y: slider.topPadding + slider.availableHeight / 2 - height / 2
+        implicitWidth: 16
+        implicitHeight: 16
+        width: 16
+        height: 16
+        radius: 4
+        color: "#f7f9ff"
+        border.width: 3
+        border.color: "#829cff"
+      }
+    }
+
+    NumberField {
+      Layout.alignment: Qt.AlignVCenter
       value: root.value
-      when: !slider.pressed
-      restoreMode: Binding.RestoreBinding
-    }
-
-    background: Rectangle {
-      x: slider.leftPadding; y: slider.topPadding + slider.availableHeight / 2 - height / 2
-      implicitWidth: 160; implicitHeight: 5
-      width: slider.availableWidth; height: 5; radius: 3; color: Qt.rgba(1, 1, 1, 0.09)
-      Rectangle { width: parent.width * slider.visualPosition; height: parent.height; radius: 3; color: "#829cff" }
-    }
-    handle: Rectangle {
-      x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
-      y: slider.topPadding + slider.availableHeight / 2 - height / 2
-      implicitWidth: 16; implicitHeight: 16
-      width: 16; height: 16; radius: 8; color: "#f7f9ff"
-      border.width: 3; border.color: "#829cff"
+      from: root.from
+      to: root.to
+      stepSize: root.stepSize
+      decimals: root.decimals
+      suffix: root.suffix
+      enabled: root.enabled
+      onEdited: function(v) { root.edited(v) }
     }
   }
 }
