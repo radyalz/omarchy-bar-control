@@ -86,8 +86,6 @@ ColumnLayout {
     Layout.topMargin: root.expanded ? 10 : 0
     Layout.bottomMargin: root.expanded ? 6 : 0
     visible: root.expanded
-    opacity: root.expanded ? 1 : 0
     spacing: 12
-    Behavior on opacity { NumberAnimation { duration: 130 } }
   }
 }

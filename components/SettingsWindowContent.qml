@@ -20,32 +20,62 @@ Rectangle {
 
   readonly property color sep: Qt.alpha(Color.foreground, 0.09)
 
-  // Fade the current page in on every switch. Kept out of the StackLayout so it
-  // is never mistaken for a page.
-  NumberAnimation {
-    id: pageFadeIn
-    target: stack
-    property: "opacity"
-    to: 1
-    duration: 170
-    easing.type: Easing.OutCubic
-  }
-
-  ColumnLayout {
-    anchors.fill: parent
+  // Original layout: one RowLayout. When the sidebar is collapsed the content
+  // just gets top/bottom margin to clear the two strips, which are plain
+  // anchored overlays outside the layout flow.
+  RowLayout {
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    anchors.topMargin: root.sidebarCollapsed ? 39 : 0
+    anchors.bottomMargin: root.sidebarCollapsed ? 29 : 0
     spacing: 0
 
-    // Collapsed: a slim top bar carrying the name + the two icons.
-    RowLayout {
+    SettingsSidebar {
+      Layout.preferredWidth: root.sidebarCollapsed ? 0 : 178
+      Layout.fillHeight: true
+      clip: true
+      visible: Layout.preferredWidth > 2
+      pageNames: root.pageNames
+      currentPage: root.currentPage
+      service: root.service
+      onPageSelected: function(index) { root.pageSelected(index) }
+      onCollapseRequested: root.sidebarCollapsed = true
+      Behavior on Layout.preferredWidth {
+        NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+      }
+    }
+    Rectangle {
+      Layout.preferredWidth: 1
+      Layout.fillHeight: true
+      visible: !root.sidebarCollapsed
+      color: root.sep
+    }
+    StackLayout {
       Layout.fillWidth: true
-      Layout.preferredHeight: root.sidebarCollapsed ? 38 : 0
-      opacity: root.sidebarCollapsed ? 1 : 0
-      visible: opacity > 0.01
-      spacing: 8
-      Behavior on opacity { NumberAnimation { duration: 150 } }
-      Behavior on Layout.preferredHeight { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+      Layout.fillHeight: true
+      currentIndex: root.currentPage
+      AutohidePage { service: root.service }
+      BarPage { service: root.service }
+      DiagnosticsPage { service: root.service }
+      AboutSupportPage { service: root.service }
+    }
+  }
 
-      Item { Layout.preferredWidth: 4 }
+  // Collapsed: slim top strip.
+  Item {
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+    height: 38
+    visible: root.sidebarCollapsed
+
+    RowLayout {
+      anchors.fill: parent
+      anchors.leftMargin: 8
+      anchors.rightMargin: 8
+      spacing: 8
       IconButton {
         Layout.alignment: Qt.AlignVCenter
         icon: "☰"
@@ -67,74 +97,36 @@ Rectangle {
         tooltip: "Close"
         onClicked: root.closeRequested()
       }
-      Item { Layout.preferredWidth: 4 }
     }
     Rectangle {
-      Layout.fillWidth: true
-      Layout.preferredHeight: 1
-      visible: root.sidebarCollapsed
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      height: 1
       color: root.sep
     }
+  }
 
-    RowLayout {
-      Layout.fillWidth: true
-      Layout.fillHeight: true
-      spacing: 0
+  // Collapsed: slim bottom strip.
+  Item {
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    height: 28
+    visible: root.sidebarCollapsed
 
-      SettingsSidebar {
-        Layout.preferredWidth: root.sidebarCollapsed ? 0 : 178
-        Layout.fillHeight: true
-        clip: true
-        visible: Layout.preferredWidth > 2
-        opacity: root.sidebarCollapsed ? 0 : 1
-        pageNames: root.pageNames
-        currentPage: root.currentPage
-        service: root.service
-        onPageSelected: function(index) { root.pageSelected(index) }
-        onCollapseRequested: root.sidebarCollapsed = true
-        Behavior on Layout.preferredWidth {
-          NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
-        }
-        Behavior on opacity { NumberAnimation { duration: 150 } }
-      }
-      Rectangle {
-        Layout.preferredWidth: 1
-        Layout.fillHeight: true
-        visible: !root.sidebarCollapsed
-        color: root.sep
-      }
-      StackLayout {
-        id: stack
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        currentIndex: root.currentPage
-        opacity: 1
-        onCurrentIndexChanged: { stack.opacity = 0.2; pageFadeIn.restart() }
-
-        AutohidePage { service: root.service }
-        BarPage { service: root.service }
-        DiagnosticsPage { service: root.service }
-        AboutSupportPage { service: root.service }
-      }
-    }
-
-    // Collapsed: a slim bottom bar with the activation status and copyright.
     Rectangle {
-      Layout.fillWidth: true
-      Layout.preferredHeight: 1
-      visible: root.sidebarCollapsed
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.top: parent.top
+      height: 1
       color: root.sep
     }
     RowLayout {
-      Layout.fillWidth: true
-      Layout.preferredHeight: root.sidebarCollapsed ? 28 : 0
-      opacity: root.sidebarCollapsed ? 1 : 0
-      visible: opacity > 0.01
+      anchors.fill: parent
+      anchors.leftMargin: 14
+      anchors.rightMargin: 14
       spacing: 8
-      Behavior on opacity { NumberAnimation { duration: 150 } }
-      Behavior on Layout.preferredHeight { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-
-      Item { Layout.preferredWidth: 14 }
       Rectangle {
         Layout.alignment: Qt.AlignVCenter
         width: 7
@@ -155,7 +147,6 @@ Rectangle {
         color: Qt.alpha(Color.foreground, 0.45)
         font.pixelSize: 10
       }
-      Item { Layout.preferredWidth: 14 }
     }
   }
 

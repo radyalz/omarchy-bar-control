@@ -11,12 +11,14 @@ Canvas {
   property real y2: 1.00
   property real previewT: 0
 
+  // Canvas 2D strokeStyle/fillStyle accept colour values directly, so pass the
+  // theme colours straight through.
   readonly property var plotColors: ({
-    grid: Qt.alpha(Color.foreground, 0.12).toString(),
-    guide: Qt.alpha(Color.foreground, 0.4).toString(),
-    curve: Color.foreground.toString(),
-    endpoint: Qt.alpha(Color.foreground, 0.55).toString(),
-    handle: Color.accent.toString(),
+    grid: Qt.alpha(Color.foreground, 0.12),
+    guide: Qt.alpha(Color.foreground, 0.4),
+    curve: Color.foreground,
+    endpoint: Qt.alpha(Color.foreground, 0.55),
+    handle: Color.accent,
     preview: "#76d39b"
   })
 

@@ -6,12 +6,13 @@ import qs.Commons
 // One colour row: label + swatch + hex field, with the description on its own
 // full-width line below. Accepts #rrggbb or #aarrggbb; the hex border turns red
 // while the text is not a valid colour, and only valid values are emitted.
-// Clicking the swatch opens an HSV picker.
+// Clicking the swatch opens an HSV picker, which is only instantiated on demand.
 ColumnLayout {
   id: root
   property string label: ""
   property string description: ""
   property string value: "#000000"
+  property bool pickerOpen: false
   signal edited(string value)
 
   Layout.fillWidth: true
@@ -56,33 +57,32 @@ ColumnLayout {
       opacity: root.enabled ? 1 : 0.4
       color: root.valid(root.value) ? root.value : "transparent"
       border.width: 1
-      border.color: picker.opened ? Color.accent : Qt.alpha(Color.foreground, 0.2)
+      border.color: root.pickerOpen ? Color.accent : Qt.alpha(Color.foreground, 0.2)
 
       MouseArea {
         anchors.fill: parent
         enabled: root.enabled
         cursorShape: Qt.PointingHandCursor
-        onClicked: picker.opened ? picker.close() : picker.open()
+        onClicked: root.pickerOpen = !root.pickerOpen
       }
 
-      ColorPicker {
-        id: picker
-        value: root.value
-        onPicked: function(hex) { root.edited(hex) }
-
-        // Position relative to the swatch, but flip left / above when the popup
-        // would run off the window instead of clipping at the edge.
-        readonly property point winPos: swatch.mapToItem(null, 0, 0)
-        readonly property real winW: swatch.Window.width > 0 ? swatch.Window.width : 820
-        readonly property real winH: swatch.Window.height > 0 ? swatch.Window.height : 620
-        x: {
-          var overRight = (winPos.x + implicitWidth) - (winW - 10)
-          return overRight > 0 ? -overRight : 0
-        }
-        y: {
-          var below = swatch.height + 6
-          var overBottom = (winPos.y + below + implicitHeight) - (winH - 10)
-          return overBottom > 0 ? -(implicitHeight + 6) : below
+      Loader {
+        active: root.pickerOpen
+        sourceComponent: ColorPicker {
+          value: root.value
+          onPicked: function(hex) { root.edited(hex) }
+          onClosed: root.pickerOpen = false
+          Component.onCompleted: {
+            var wp = swatch.mapToItem(null, 0, 0)
+            var winW = (swatch.Window && swatch.Window.width > 0) ? swatch.Window.width : 820
+            var winH = (swatch.Window && swatch.Window.height > 0) ? swatch.Window.height : 620
+            var overRight = (wp.x + implicitWidth) - (winW - 10)
+            x = overRight > 0 ? -overRight : 0
+            var below = swatch.height + 6
+            var overBottom = (wp.y + below + implicitHeight) - (winH - 10)
+            y = overBottom > 0 ? -(implicitHeight + 6) : below
+            open()
+          }
         }
       }
     }
