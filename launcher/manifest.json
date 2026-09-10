@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "radyalz.bar-control-launcher",
   "name": "Radyalz Bar Control",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "author": "Radman Alizadeh (Radyalz)",
   "description": "Compact bar popover for Radyalz Bar Control quick settings.",
   "license": "MIT",

@@ -1,5 +1,6 @@
 import QtQuick
 import "components"
+import "../Version.js" as Version
 
 Column {
   id: root
@@ -13,7 +14,8 @@ Column {
   }
   QuickHeader {
     width: parent.width; bar: root.host ? root.host.bar : null
-    title: "Radyalz Bar Control"; subtitle: "v0.3.2 · Radman Alizadeh (Radyalz) · MIT"
+    title: Version.name
+    subtitle: Version.full + " · " + Version.author + " · " + Version.license
   }
   QuickAction {
     bar: root.host ? root.host.bar : null; text: "Open GitHub"
