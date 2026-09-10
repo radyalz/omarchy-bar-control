@@ -21,7 +21,11 @@ InfoCard {
     enabled: root.service !== null
     onSelected: function(value) { if (root.service) root.service.setAnimationPreset(value) }
   }
-  Text { text: "Easing family"; color: "#cbd1dc"; font.pixelSize: 12 }
+  Text {
+    text: "Easing family"
+    color: root.service && root.service.customCurveEnabled ? "#7c828e" : "#cbd1dc"
+    font.pixelSize: 12
+  }
   ChoiceGroup {
     Layout.fillWidth: true
     options: ["Quad", "Cubic", "Quart", "Quint", "Sine"]
@@ -31,5 +35,13 @@ InfoCard {
       if (!root.service) return
       root.service.animationPreset = "Custom"; root.service.easing = value
     }
+  }
+  Text {
+    visible: root.service && root.service.customCurveEnabled
+    Layout.fillWidth: true
+    text: "The custom motion curve is on, so it sets the easing. Turn it off in the Motion curve section to pick an easing family."
+    color: "#828b9b"
+    font.pixelSize: 10
+    wrapMode: Text.WordWrap
   }
 }
