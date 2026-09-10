@@ -6,7 +6,7 @@ the stock `omarchy.bar` with a drop-in clone that adds **animated autohide**, a
 **custom colours**, plus a compact bar popover and a full settings window — all
 without leaving the desktop.
 
-![version](https://img.shields.io/badge/version-0.4.4-8a63d2)
+![version](https://img.shields.io/badge/version-0.4.5-8a63d2)
 ![license](https://img.shields.io/badge/license-MIT-4c9a6b)
 ![platform](https://img.shields.io/badge/platform-Omarchy%20%2F%20Quickshell-3b7dd8)
 [![latest release](https://img.shields.io/github/v/release/radyalz/omarchy-bar-control?label=github%20release)](https://github.com/radyalz/omarchy-bar-control/releases)

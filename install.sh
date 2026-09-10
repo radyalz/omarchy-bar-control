@@ -58,7 +58,7 @@ usage() {
   cat <<'USAGE'
 Usage: ./install.sh [--launcher left|center|right|app]
 
-Radyalz Bar Control v0.4.4 can install fresh from the current Omarchy stock bar
+Radyalz Bar Control v0.4.5 can install fresh from the current Omarchy stock bar
 runtime. If an older Animated Autohide Bar install is present, its settings are
 migrated before the old plugin IDs are retired.
 
@@ -284,7 +284,7 @@ else
   printf 'Start the Omarchy shell to load the plugin.\n'
 fi
 
-printf '\nInstalled Radyalz Bar Control v0.4.4.\n'
+printf '\nInstalled Radyalz Bar Control v0.4.5.\n'
 printf 'Plugin ID: %s (one plugin: bar, service, settings panel, and the popover bar widget)\n' "$MAIN_ID"
 printf 'Linux app launcher: Radyalz Bar Control\n'
 if [[ "$mode" == "app" ]]; then
