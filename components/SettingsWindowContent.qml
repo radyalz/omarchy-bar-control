@@ -20,6 +20,17 @@ Rectangle {
 
   readonly property color sep: Qt.alpha(Color.foreground, 0.09)
 
+  // Fade the current page in on every switch. Kept out of the StackLayout so it
+  // is never mistaken for a page.
+  NumberAnimation {
+    id: pageFadeIn
+    target: stack
+    property: "opacity"
+    to: 1
+    duration: 170
+    easing.type: Easing.OutCubic
+  }
+
   ColumnLayout {
     anchors.fill: parent
     spacing: 0
@@ -33,6 +44,7 @@ Rectangle {
       spacing: 8
       Behavior on opacity { NumberAnimation { duration: 150 } }
       Behavior on Layout.preferredHeight { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
       Item { Layout.preferredWidth: 4 }
       IconButton {
         Layout.alignment: Qt.AlignVCenter
@@ -60,9 +72,8 @@ Rectangle {
     Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 1
-      opacity: root.sidebarCollapsed ? 1 : 0
+      visible: root.sidebarCollapsed
       color: root.sep
-      Behavior on opacity { NumberAnimation { duration: 150 } }
     }
 
     RowLayout {
@@ -97,17 +108,9 @@ Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: true
         currentIndex: root.currentPage
-        // Fade the page in on every switch.
         opacity: 1
         onCurrentIndexChanged: { stack.opacity = 0.2; pageFadeIn.restart() }
-        NumberAnimation {
-          id: pageFadeIn
-          target: stack
-          property: "opacity"
-          to: 1
-          duration: 170
-          easing.type: Easing.OutCubic
-        }
+
         AutohidePage { service: root.service }
         BarPage { service: root.service }
         DiagnosticsPage { service: root.service }
@@ -119,9 +122,8 @@ Rectangle {
     Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 1
-      opacity: root.sidebarCollapsed ? 1 : 0
+      visible: root.sidebarCollapsed
       color: root.sep
-      Behavior on opacity { NumberAnimation { duration: 150 } }
     }
     RowLayout {
       Layout.fillWidth: true
@@ -131,6 +133,7 @@ Rectangle {
       spacing: 8
       Behavior on opacity { NumberAnimation { duration: 150 } }
       Behavior on Layout.preferredHeight { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
       Item { Layout.preferredWidth: 14 }
       Rectangle {
         Layout.alignment: Qt.AlignVCenter

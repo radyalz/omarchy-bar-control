@@ -5,7 +5,7 @@ import qs.Commons
 // Collapsible group. Header shows the title and, while collapsed, a short
 // summary of the current values; the body holds whatever is declared inside.
 // Collapsed by default so the page opens as a short list of presets and
-// section headers. The body slides + fades open.
+// section headers. The body animates its height + fades.
 ColumnLayout {
   id: root
 
@@ -15,6 +15,8 @@ ColumnLayout {
   property bool resettable: false
   signal resetRequested()
 
+  // Keep `body` a DIRECT child of this ColumnLayout: the default-property alias
+  // and the layout both depend on that. Do not wrap it in another Item.
   default property alias content: body.data
 
   Layout.fillWidth: true
@@ -30,9 +32,6 @@ ColumnLayout {
     border.color: Qt.alpha(Color.foreground, 0.08)
     Behavior on color { ColorAnimation { duration: 110 } }
 
-    // Declared first so the header controls below render on top and take their
-    // own clicks; the plain Text items do not consume events, so clicks on the
-    // rest of the header fall through to here.
     MouseArea {
       id: headerMouse
       anchors.fill: parent
@@ -78,24 +77,27 @@ ColumnLayout {
     }
   }
 
-  Item {
-    id: bodyClip
+  ColumnLayout {
+    id: body
     Layout.fillWidth: true
-    Layout.preferredHeight: root.expanded ? body.implicitHeight + 16 : 0
+    Layout.leftMargin: 4
+    Layout.rightMargin: 4
+    Layout.topMargin: root.expanded ? 10 : 0
+    Layout.bottomMargin: root.expanded ? 6 : 0
+    // Animate the height between 0 and the natural content height; clip so the
+    // content is hidden while collapsing. maximumHeight pins it so the parent
+    // layout does not stretch it back.
+    Layout.preferredHeight: root.expanded ? body.implicitHeight : 0
+    Layout.maximumHeight: root.expanded ? body.implicitHeight : 0
     clip: true
     opacity: root.expanded ? 1 : 0
+    spacing: 12
     Behavior on Layout.preferredHeight {
       NumberAnimation { duration: 170; easing.type: Easing.OutCubic }
     }
-    Behavior on opacity { NumberAnimation { duration: 130 } }
-
-    ColumnLayout {
-      id: body
-      x: 4
-      y: root.expanded ? 10 : 2
-      width: bodyClip.width - 8
-      spacing: 12
-      Behavior on y { NumberAnimation { duration: 170; easing.type: Easing.OutCubic } }
+    Behavior on Layout.maximumHeight {
+      NumberAnimation { duration: 170; easing.type: Easing.OutCubic }
     }
+    Behavior on opacity { NumberAnimation { duration: 130 } }
   }
 }
