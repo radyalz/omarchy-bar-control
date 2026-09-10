@@ -71,10 +71,23 @@ RowLayout {
 
     ColorPicker {
       id: picker
-      x: 0
-      y: swatch.height + 6
       value: root.value
       onPicked: function(hex) { root.edited(hex) }
+
+      // Position relative to the swatch, but flip left / above when the popup
+      // would run off the window instead of clipping at the edge.
+      readonly property point winPos: swatch.mapToItem(null, 0, 0)
+      readonly property real winW: swatch.Window.width > 0 ? swatch.Window.width : 820
+      readonly property real winH: swatch.Window.height > 0 ? swatch.Window.height : 620
+      x: {
+        var overRight = (winPos.x + implicitWidth) - (winW - 10)
+        return overRight > 0 ? -overRight : 0
+      }
+      y: {
+        var below = swatch.height + 6
+        var overBottom = (winPos.y + below + implicitHeight) - (winH - 10)
+        return overBottom > 0 ? -(implicitHeight + 6) : below
+      }
     }
   }
 

@@ -14,6 +14,11 @@ QQC.Popup {
   padding: 10
   focus: true
   closePolicy: QQC.Popup.CloseOnEscape | QQC.Popup.CloseOnPressOutside
+  implicitWidth: 228
+  implicitHeight: 274
+
+  enter: Transition { NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 110 } }
+  exit: Transition { NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 90 } }
 
   property real hue: 0
   property real sat: 0
