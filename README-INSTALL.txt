@@ -31,13 +31,15 @@ Non-interactive examples:
   ./install.sh --launcher right
   ./install.sh --launcher app
 
-PLUGIN IDS
-----------
-Main plugin:
+PLUGIN ID
+---------
+One plugin provides everything:
   radyalz.bar-control
 
-Optional settings bar widget:
-  radyalz.bar-control-launcher
+It registers the replacement bar, the settings service, the advanced settings
+panel, and the optional quick-settings bar popover (a bar widget within the
+same plugin). Installs from 0.4.2 and earlier that had a separate
+radyalz.bar-control-launcher plugin are cleaned up on the next install.
 
 AUTOHIDE MODULE
 ---------------
@@ -55,8 +57,8 @@ Run:
 
   ./uninstall.sh
 
-This returns the active bar to omarchy.bar and removes the plugin, launcher
-widget, and desktop launcher.
+This returns the active bar to omarchy.bar and removes the plugin (including
+its popover bar widget) and the desktop launcher.
 
 SETTINGS PERSISTENCE
 --------------------

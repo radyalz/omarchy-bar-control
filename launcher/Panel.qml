@@ -5,8 +5,8 @@ import qs.Ui
 Panel {
   id: root
 
-  moduleName: "radyalz.bar-control-launcher"
-  ipcTarget: "radyalz.bar-control-launcher"
+  moduleName: "radyalz.bar-control"
+  ipcTarget: "radyalz.bar-control"
   manageIpc: false
   property string view: "main"
 

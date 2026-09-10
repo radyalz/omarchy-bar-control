@@ -4,16 +4,25 @@
   "name": "Radyalz Bar Control",
   "version": "0.4.3",
   "author": "Radman Alizadeh (Radyalz)",
-  "description": "Configurable Omarchy replacement bar with animated autohide, reveal controls, motion and curve editing, placement, appearance, diagnostics, and support tools.",
+  "description": "Configurable Omarchy replacement bar with animated autohide, reveal controls, motion and curve editing, placement, appearance, diagnostics, and support tools. Includes an optional bar popover for quick settings.",
   "kinds": [
     "bar",
     "service",
-    "panel"
+    "panel",
+    "bar-widget"
   ],
   "entryPoints": {
     "bar": "Bar.qml",
     "service": "Service.qml",
-    "panel": "SettingsPanel.qml"
+    "panel": "SettingsPanel.qml",
+    "barWidget": "launcher/Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Radyalz Bar Control",
+    "description": "Quick autohide, animation, placement and appearance controls.",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
   },
   "omarchy": {
     "clonedFrom": "omarchy.bar"

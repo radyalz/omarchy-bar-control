@@ -2,12 +2,13 @@
 set -euo pipefail
 
 MAIN_ID="radyalz.bar-control"
-LAUNCHER_ID="radyalz.bar-control-launcher"
+# Superseded ids whose plugin dirs and shell.json entries this installer clears.
+SPLIT_LAUNCHER_ID="radyalz.bar-control-launcher"   # 0.4.2 and earlier shipped the popover as a second plugin
 OLD_MAIN_ID="radyalz.animated-autohide-bar"
 OLD_LAUNCHER_ID="radyalz.animated-autohide-launcher"
 
 plugin="$HOME/.config/omarchy/plugins/$MAIN_ID"
-launcher_plugin="$HOME/.config/omarchy/plugins/$LAUNCHER_ID"
+split_launcher_plugin="$HOME/.config/omarchy/plugins/$SPLIT_LAUNCHER_ID"
 old_plugin="$HOME/.config/omarchy/plugins/$OLD_MAIN_ID"
 old_launcher_plugin="$HOME/.config/omarchy/plugins/$OLD_LAUNCHER_ID"
 stock_bar="/usr/share/omarchy/shell/plugins/bar"
@@ -162,22 +163,23 @@ fi
 rm -f "$plugin/settings.json"
 
 # Overlay project-owned files and the modular settings UI.
-for file in Bar.qml Service.qml SettingsPanel.qml manifest.json; do
+for file in Bar.qml Service.qml SettingsPanel.qml Version.js manifest.json; do
   cp -a "$here/$file" "$plugin/$file"
 done
-rm -rf "$plugin/components" "$plugin/pages"
+rm -rf "$plugin/components" "$plugin/pages" "$plugin/launcher"
 cp -a "$here/components" "$plugin/components"
 cp -a "$here/pages" "$plugin/pages"
+cp -a "$here/launcher" "$plugin/launcher"
 
 if [[ ! -f "$plugin/BarModel.js" ]]; then
   printf 'Missing required runtime asset: %s\n' "$plugin/BarModel.js" >&2
   exit 1
 fi
 
-# Install the compact companion bar popover as one self-contained plugin.
-rm -rf "$launcher_plugin"
-mkdir -p "$launcher_plugin"
-cp -a "$here/launcher/." "$launcher_plugin/"
+# The quick-settings popover is now a bar widget inside this one plugin
+# (manifest kind "bar-widget", entry point launcher/Panel.qml). Remove the
+# standalone second plugin that 0.4.2 and earlier installed.
+rm -rf "$split_launcher_plugin"
 
 # Always install a desktop/app-menu launcher so the GUI remains reachable even
 # if the bar button is removed or the bar itself is hidden.
@@ -215,10 +217,12 @@ import os
 from pathlib import Path
 
 main_id = 'radyalz.bar-control'
-launcher_id = 'radyalz.bar-control-launcher'
+# The popover is a bar widget inside main_id now, so its layout entry uses
+# main_id too. radyalz.bar-control-launcher is the retired separate plugin.
 old_ids = {
     'radyalz.animated-autohide-bar',
     'radyalz.animated-autohide-launcher',
+    'radyalz.bar-control-launcher',
 }
 mode = os.environ['MODE']
 
@@ -234,11 +238,11 @@ if p.exists():
             entry for entry in layout.get(section, [])
             if not (
                 isinstance(entry, dict)
-                and entry.get('id') in old_ids | {launcher_id}
+                and entry.get('id') in old_ids | {main_id}
             )
         ]
         if mode == section:
-            cleaned.append({'id': launcher_id})
+            cleaned.append({'id': main_id})
         layout[section] = cleaned
 
     plugins = []
@@ -281,7 +285,7 @@ else
 fi
 
 printf '\nInstalled Radyalz Bar Control v0.4.3.\n'
-printf 'Plugin ID: %s\n' "$MAIN_ID"
+printf 'Plugin ID: %s (one plugin: bar, service, settings panel, and the popover bar widget)\n' "$MAIN_ID"
 printf 'Linux app launcher: Radyalz Bar Control\n'
 if [[ "$mode" == "app" ]]; then
   printf 'Bar settings button: not placed in the bar\n'
