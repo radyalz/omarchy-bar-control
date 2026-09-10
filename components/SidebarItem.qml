@@ -16,6 +16,8 @@ Rectangle {
     : Qt.alpha(Color.foreground, mouse.containsMouse ? 0.055 : 0)
   border.width: 1
   border.color: root.active ? Qt.alpha(Color.accent, 0.3) : "transparent"
+  Behavior on color { ColorAnimation { duration: 140; easing.type: Easing.OutCubic } }
+  Behavior on border.color { ColorAnimation { duration: 140 } }
 
   Rectangle {
     width: 3
@@ -26,6 +28,7 @@ Rectangle {
     anchors.verticalCenter: parent.verticalCenter
     color: Color.accent
     opacity: root.active ? 1 : 0
+    Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   }
   Text {
     anchors.left: parent.left
@@ -38,6 +41,7 @@ Rectangle {
     font.pixelSize: 12
     font.weight: root.active ? Font.DemiBold : Font.Normal
     elide: Text.ElideRight
+    Behavior on color { ColorAnimation { duration: 140 } }
   }
   MouseArea {
     id: mouse

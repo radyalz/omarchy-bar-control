@@ -27,9 +27,12 @@ Rectangle {
     // Collapsed: a slim top bar carrying the name + the two icons.
     RowLayout {
       Layout.fillWidth: true
-      Layout.preferredHeight: 38
-      visible: root.sidebarCollapsed
+      Layout.preferredHeight: root.sidebarCollapsed ? 38 : 0
+      opacity: root.sidebarCollapsed ? 1 : 0
+      visible: opacity > 0.01
       spacing: 8
+      Behavior on opacity { NumberAnimation { duration: 150 } }
+      Behavior on Layout.preferredHeight { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
       Item { Layout.preferredWidth: 4 }
       IconButton {
         Layout.alignment: Qt.AlignVCenter
@@ -57,8 +60,9 @@ Rectangle {
     Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 1
-      visible: root.sidebarCollapsed
+      opacity: root.sidebarCollapsed ? 1 : 0
       color: root.sep
+      Behavior on opacity { NumberAnimation { duration: 150 } }
     }
 
     RowLayout {
@@ -71,6 +75,7 @@ Rectangle {
         Layout.fillHeight: true
         clip: true
         visible: Layout.preferredWidth > 2
+        opacity: root.sidebarCollapsed ? 0 : 1
         pageNames: root.pageNames
         currentPage: root.currentPage
         service: root.service
@@ -79,6 +84,7 @@ Rectangle {
         Behavior on Layout.preferredWidth {
           NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
         }
+        Behavior on opacity { NumberAnimation { duration: 150 } }
       }
       Rectangle {
         Layout.preferredWidth: 1
@@ -87,9 +93,21 @@ Rectangle {
         color: root.sep
       }
       StackLayout {
+        id: stack
         Layout.fillWidth: true
         Layout.fillHeight: true
         currentIndex: root.currentPage
+        // Fade the page in on every switch.
+        opacity: 1
+        onCurrentIndexChanged: { stack.opacity = 0.2; pageFadeIn.restart() }
+        NumberAnimation {
+          id: pageFadeIn
+          target: stack
+          property: "opacity"
+          to: 1
+          duration: 170
+          easing.type: Easing.OutCubic
+        }
         AutohidePage { service: root.service }
         BarPage { service: root.service }
         DiagnosticsPage { service: root.service }
@@ -101,14 +119,18 @@ Rectangle {
     Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 1
-      visible: root.sidebarCollapsed
+      opacity: root.sidebarCollapsed ? 1 : 0
       color: root.sep
+      Behavior on opacity { NumberAnimation { duration: 150 } }
     }
     RowLayout {
       Layout.fillWidth: true
-      Layout.preferredHeight: 28
-      visible: root.sidebarCollapsed
+      Layout.preferredHeight: root.sidebarCollapsed ? 28 : 0
+      opacity: root.sidebarCollapsed ? 1 : 0
+      visible: opacity > 0.01
       spacing: 8
+      Behavior on opacity { NumberAnimation { duration: 150 } }
+      Behavior on Layout.preferredHeight { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
       Item { Layout.preferredWidth: 14 }
       Rectangle {
         Layout.alignment: Qt.AlignVCenter
