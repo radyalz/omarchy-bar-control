@@ -8,16 +8,19 @@ Rectangle {
   property bool active: false
   signal clicked()
 
+  readonly property color fg: bar ? bar.foreground : Qt.rgba(1, 1, 1, 1)
+  readonly property color accent: bar ? bar.accent : "#7c9cff"
+
   implicitWidth: label.implicitWidth + 22
   implicitHeight: 30
   radius: 4
   color: root.active
-    ? Qt.rgba(0.38, 0.52, 1, 0.34)
-    : Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.10 : 0.055)
+    ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.32)
+    : Qt.rgba(root.fg.r, root.fg.g, root.fg.b, mouse.containsMouse ? 0.1 : 0.055)
   border.width: 1
   border.color: root.active
-    ? Qt.rgba(0.55, 0.66, 1, 0.70)
-    : Qt.rgba(1, 1, 1, 0.08)
+    ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.7)
+    : Qt.rgba(root.fg.r, root.fg.g, root.fg.b, 0.08)
 
   Text {
     id: label

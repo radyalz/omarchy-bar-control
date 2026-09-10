@@ -3,8 +3,10 @@ import QtQuick
 Item {
   id: root
 
+  property var bar: null
   property bool checked: false
-  property color accent: "#7c9cff"
+  property color accent: bar ? bar.accent : "#7c9cff"
+  readonly property color fg: bar ? bar.foreground : "#ffffff"
   signal toggled(bool checked)
 
   implicitWidth: 42
@@ -15,11 +17,11 @@ Item {
     radius: 4
     color: root.checked
       ? root.accent
-      : Qt.rgba(1, 1, 1, 0.12)
+      : Qt.rgba(root.fg.r, root.fg.g, root.fg.b, 0.12)
     border.width: 1
     border.color: root.checked
       ? Qt.lighter(root.accent, 1.12)
-      : Qt.rgba(1, 1, 1, 0.12)
+      : Qt.rgba(root.fg.r, root.fg.g, root.fg.b, 0.12)
 
     Behavior on color { ColorAnimation { duration: 130 } }
   }
@@ -30,7 +32,7 @@ Item {
     radius: 4
     y: 3
     x: root.checked ? root.width - width - 3 : 3
-    color: "#ffffff"
+    color: root.fg
     opacity: root.enabled ? 1 : 0.55
     Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
   }

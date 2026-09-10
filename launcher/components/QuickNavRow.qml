@@ -9,14 +9,17 @@ Rectangle {
   property string badge: ""
   signal clicked()
 
+  readonly property color fg: bar ? bar.foreground : Qt.rgba(1, 1, 1, 1)
+  readonly property color accent: bar ? bar.accent : "#7c9cff"
+
   width: parent ? parent.width : 300
   implicitHeight: 54
   radius: 4
-  color: Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.10 : 0.045)
+  color: Qt.rgba(root.fg.r, root.fg.g, root.fg.b, mouse.containsMouse ? 0.1 : 0.045)
   border.width: 1
   border.color: mouse.containsMouse
-    ? Qt.rgba(0.49, 0.61, 1, 0.34)
-    : Qt.rgba(1, 1, 1, 0.07)
+    ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.34)
+    : Qt.rgba(root.fg.r, root.fg.g, root.fg.b, 0.07)
 
   Column {
     anchors.left: parent.left
@@ -35,9 +38,7 @@ Rectangle {
     Text {
       width: parent.width
       text: root.subtitle
-      color: root.bar
-        ? Qt.rgba(root.bar.foreground.r, root.bar.foreground.g,
-            root.bar.foreground.b, 0.50) : "#8b93a0"
+      color: Qt.rgba(root.fg.r, root.fg.g, root.fg.b, 0.5)
       font.family: root.bar ? root.bar.fontFamily : "monospace"
       font.pixelSize: 10
       elide: Text.ElideRight
@@ -50,7 +51,7 @@ Rectangle {
     anchors.rightMargin: 13
     anchors.verticalCenter: parent.verticalCenter
     text: root.badge !== "" ? root.badge + "  ›" : "›"
-    color: "#91a7ff"
+    color: root.accent
     font.pixelSize: 13
   }
 

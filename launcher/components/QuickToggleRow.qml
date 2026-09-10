@@ -9,12 +9,14 @@ Rectangle {
   property bool checked: false
   signal toggled(bool checked)
 
+  readonly property color fg: bar ? bar.foreground : Qt.rgba(1, 1, 1, 1)
+
   width: parent ? parent.width : 300
   implicitHeight: 58
   radius: 4
-  color: Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.095 : 0.06)
+  color: Qt.rgba(root.fg.r, root.fg.g, root.fg.b, mouse.containsMouse ? 0.095 : 0.06)
   border.width: 1
-  border.color: Qt.rgba(1, 1, 1, 0.08)
+  border.color: Qt.rgba(root.fg.r, root.fg.g, root.fg.b, 0.08)
 
   Column {
     anchors.left: parent.left
@@ -33,9 +35,7 @@ Rectangle {
     Text {
       width: parent.width
       text: root.subtitle
-      color: root.bar
-        ? Qt.rgba(root.bar.foreground.r, root.bar.foreground.g,
-            root.bar.foreground.b, 0.52) : "#8b93a0"
+      color: Qt.rgba(root.fg.r, root.fg.g, root.fg.b, 0.52)
       font.family: root.bar ? root.bar.fontFamily : "monospace"
       font.pixelSize: 10
       elide: Text.ElideRight
@@ -47,6 +47,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.rightMargin: 12
     anchors.verticalCenter: parent.verticalCenter
+    bar: root.bar
     checked: root.checked
     onToggled: function(value) { root.toggled(value) }
   }
