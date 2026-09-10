@@ -94,7 +94,7 @@ SettingsPage {
 
     ValueSlider {
       label: "Text scale"
-      description: "Scales the bar's text. This adjusts the shell's base font size, so other shell text follows too."
+      description: "Nudges the bar's icon-label text size (on top of icon scale). Full shell-wide text scaling is intentionally not done from here — it can crash the shell."
       from: 60; to: 180; stepSize: 5; suffix: " %"
       value: root.service ? root.service.fontScale : 100
       enabled: root.service && root.service.barSizeOverrideEnabled

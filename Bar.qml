@@ -195,33 +195,38 @@ Item {
       root.barHidden = false
   }
 
-  // Best effort: Omarchy's BarIconButton reads Style.bar.icon* and every text
-  // size derives from Style.fontBaseSize, both on the Style singleton, so the
-  // only lever from here is to push scaled values into it. A bare theme reload
-  // clears them until the next settings change re-applies here. Font scale is
-  // shell-wide, not bar-only.
+  // Icon / text scale for the bar's own widgets, applied only through
+  // Style.barOverrides (icon tokens). We deliberately do NOT write
+  // Style.fontBaseSize: mutating it re-lays out the whole shell and Quickshell
+  // 0.3.1 can segfault doing that during a plugin load. So text scale here just
+  // nudges the bar's icon-font token alongside icon scale. All of this is
+  // opt-in (barSizeOverrideEnabled), armed only after the shell has settled,
+  // and never writes an unchanged value.
   readonly property var iconTokenBase: ({ "icon-slot": 27, "icon-canvas": 16, "icon-font": 13 })
-  property int themeFontBaseSize: 0
+  readonly property var iconTokenKeys: ["icon-slot", "icon-canvas", "icon-font"]
+  property bool scalesArmed: false
   function applyScales() {
-    if (root.themeFontBaseSize <= 0) return
+    if (!root.scalesArmed)
+      return
 
-    // Guarded: these mutate the shared Style singleton. If a Quickshell/Omarchy
-    // version rejects a write, don't let it take the bar down.
+    var existing = Style.barOverrides || ({})
+    var next = {}
+    for (var k in existing)
+      if (root.iconTokenKeys.indexOf(k) === -1)
+        next[k] = existing[k]
+
+    if (autohideSettings.barSizeOverrideEnabled) {
+      var iconScale = Math.max(0.6, Math.min(1.8, autohideSettings.iconScale / 100))
+      var fontScale = Math.max(0.6, Math.min(1.8, autohideSettings.fontScale / 100))
+      next["icon-slot"] = Math.round(root.iconTokenBase["icon-slot"] * iconScale)
+      next["icon-canvas"] = Math.round(root.iconTokenBase["icon-canvas"] * iconScale)
+      next["icon-font"] = Math.round(root.iconTokenBase["icon-font"] * iconScale * fontScale)
+    }
+
+    if (JSON.stringify(next) === JSON.stringify(existing))
+      return
     try {
-      var iconScale = autohideSettings.barSizeOverrideEnabled
-        ? Math.max(0.6, Math.min(1.8, autohideSettings.iconScale / 100)) : 1
-      var next = {}
-      var existing = Style.barOverrides || ({})
-      for (var k in existing) next[k] = existing[k]
-      for (var token in root.iconTokenBase) {
-        if (iconScale === 1) delete next[token]
-        else next[token] = Math.round(root.iconTokenBase[token] * iconScale)
-      }
       Style.barOverrides = next
-
-      var fontScale = autohideSettings.barSizeOverrideEnabled
-        ? Math.max(0.6, Math.min(1.8, autohideSettings.fontScale / 100)) : 1
-      Style.fontBaseSize = Math.max(6, Math.round(root.themeFontBaseSize * fontScale))
     } catch (error) {
       console.warn("radyalz-bar-control: applyScales failed:", error)
     }
@@ -857,11 +862,18 @@ Item {
     return source ? Util.fileUrl(source) : ""
   }
 
-  Component.onCompleted: {
-    if (root.themeFontBaseSize <= 0)
-      root.themeFontBaseSize = Style.fontBaseSize
-    applyBarConfig()
-    applyScales()
+  Component.onCompleted: applyBarConfig()
+
+  // Never touch the shared Style singleton during load. Arm it only once the
+  // shell has settled, then apply whatever the settings ask for.
+  Timer {
+    interval: 2500
+    repeat: false
+    running: true
+    onTriggered: {
+      root.scalesArmed = true
+      root.applyScales()
+    }
   }
 
   // Revealing the indicators widens their section, which can slide a neighbour
