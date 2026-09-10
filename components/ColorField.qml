@@ -34,7 +34,7 @@ RowLayout {
 
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 1
+    spacing: 2
     Text {
       text: root.label
       color: root.enabled ? "#cbd1dc" : "#626a78"

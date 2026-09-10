@@ -118,29 +118,39 @@ SettingsPage {
       wrapMode: Text.WordWrap
     }
 
-    ColorField {
-      label: "Bar background"
-      value: root.customColors ? root.service.barColor : String(Color.bar.background)
-      enabled: root.customColors
-      onEdited: function(value) { if (root.service) root.service.barColor = value }
-    }
-    ColorField {
-      label: "Island background"
-      value: root.customColors ? root.service.islandColor : String(Color.bar.background)
-      enabled: root.customColors
-      onEdited: function(value) { if (root.service) root.service.islandColor = value }
-    }
-    ColorField {
-      label: "Foreground / text"
-      value: root.customColors ? root.service.textColor : String(Color.bar.text)
-      enabled: root.customColors
-      onEdited: function(value) { if (root.service) root.service.textColor = value }
-    }
-    ColorField {
-      label: "Accent / active"
-      value: root.customColors ? root.service.accentColor : String(Color.bar.active)
-      enabled: root.customColors
-      onEdited: function(value) { if (root.service) root.service.accentColor = value }
+    ColumnLayout {
+      Layout.fillWidth: true
+      Layout.topMargin: 4
+      spacing: 16
+
+      ColorField {
+        label: "Bar background"
+        description: "Fill of the bar window behind every widget."
+        value: root.customColors ? root.service.barColor : String(Color.bar.background)
+        enabled: root.customColors
+        onEdited: function(value) { if (root.service) root.service.barColor = value }
+      }
+      ColorField {
+        label: "Island background"
+        description: "The rounded pill drawn behind each individual widget."
+        value: root.customColors ? root.service.islandColor : String(Color.bar.background)
+        enabled: root.customColors
+        onEdited: function(value) { if (root.service) root.service.islandColor = value }
+      }
+      ColorField {
+        label: "Foreground / text"
+        description: "Text and glyph colour for widgets that follow the bar palette."
+        value: root.customColors ? root.service.textColor : String(Color.bar.text)
+        enabled: root.customColors
+        onEdited: function(value) { if (root.service) root.service.textColor = value }
+      }
+      ColorField {
+        label: "Accent / active"
+        description: "Highlight used for active and urgent widget states."
+        value: root.customColors ? root.service.accentColor : String(Color.bar.active)
+        enabled: root.customColors
+        onEdited: function(value) { if (root.service) root.service.accentColor = value }
+      }
     }
   }
 
