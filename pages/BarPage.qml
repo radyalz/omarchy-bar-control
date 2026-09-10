@@ -8,13 +8,30 @@ SettingsPage {
 
   PageTitle {
     title: "Placement & appearance"
-    description: "Move the bar, tune its travel distance, and shape the Islands-style surface in one place."
+    description: "Set where the bar lives, then open a section to shape it."
   }
+
   SectionLabel { label: "Placement" }
   PlacementCard { service: root.service }
+
   SectionLabel { label: "Appearance" }
-  AppearanceModeCard { service: root.service }
-  AppearanceGeometry { service: root.service }
+
+  ExpandableSection {
+    title: "Surface"
+    summary: root.service && root.service.currentTransparent ? "Transparent" : "Solid"
+
+    AppearanceModeCard { service: root.service }
+  }
+
+  ExpandableSection {
+    title: "Island geometry"
+    summary: root.service && root.service.appearanceOverrideEnabled ? "Custom" : "Theme default"
+    resettable: true
+    onResetRequested: if (root.service) root.service.resetIslandGeometryDefaults()
+
+    AppearanceGeometry { service: root.service }
+  }
+
   RowLayout {
     Layout.fillWidth: true
     Item { Layout.fillWidth: true }

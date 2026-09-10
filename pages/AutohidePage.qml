@@ -8,30 +8,68 @@ SettingsPage {
 
   PageTitle {
     title: "Autohide & motion"
-    description: "Autohide, reveal behavior, animation timing and the custom motion curve live together here."
+    description: "Pick a feel preset up top, then open a section to fine-tune it."
   }
+
   AutohideActivationCard { service: root.service }
-  SectionLabel { label: "Reveal" }
-  ValueSlider {
-    label: "Screen-edge trigger thickness"
-    from: 1; to: 50; stepSize: 1; suffix: " px"
-    value: root.service ? root.service.triggerThickness : 5
-    enabled: root.service !== null
-    onEdited: function(value) {
-      if (root.service) root.service.triggerThickness = Math.round(value)
+
+  SectionLabel { label: "Presets" }
+  AnimationBasics { service: root.service }
+
+  SectionLabel { label: "Fine tuning" }
+
+  ExpandableSection {
+    title: "Reveal"
+    summary: root.service ? root.service.triggerThickness + " px trigger" : ""
+    resettable: true
+    onResetRequested: if (root.service) root.service.resetRevealDefaults()
+
+    ValueSlider {
+      label: "Screen-edge trigger thickness"
+      description: "Width of the invisible strip along the edge that brings the bar back."
+      from: 1; to: 50; stepSize: 1; suffix: " px"
+      value: root.service ? root.service.triggerThickness : 5
+      enabled: root.service !== null
+      onEdited: function(value) {
+        if (root.service) root.service.triggerThickness = Math.round(value)
+      }
     }
   }
-  SectionLabel { label: "Animation" }
-  AnimationBasics { service: root.service }
-  AnimationTiming { service: root.service; showing: true }
-  AnimationTiming { service: root.service; showing: false }
-  SectionLabel { label: "Curve" }
-  MotionCurveSection { service: root.service }
+
+  ExpandableSection {
+    title: "Show animation"
+    summary: root.service
+      ? root.service.showSlideDuration + " / " + root.service.showFadeDuration + " ms" : ""
+    resettable: true
+    onResetRequested: if (root.service) root.service.resetShowTimingDefaults()
+
+    AnimationTiming { service: root.service; showing: true }
+  }
+
+  ExpandableSection {
+    title: "Hide animation"
+    summary: root.service
+      ? root.service.hideSlideDuration + " / " + root.service.hideFadeDuration + " ms" : ""
+    resettable: true
+    onResetRequested: if (root.service) root.service.resetHideTimingDefaults()
+
+    AnimationTiming { service: root.service; showing: false }
+  }
+
+  ExpandableSection {
+    title: "Motion curve"
+    summary: root.service && root.service.customCurveEnabled ? "Custom curve" : "Off"
+    resettable: true
+    onResetRequested: if (root.service) root.service.resetCurveDefaults()
+
+    MotionCurveSection { service: root.service }
+  }
+
   RowLayout {
     Layout.fillWidth: true
     Item { Layout.fillWidth: true }
     GlassButton {
-      text: "Reset motion"
+      text: "Reset all motion"
       enabled: root.service !== null
       onClicked: if (root.service) root.service.resetAnimationDefaults()
     }

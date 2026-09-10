@@ -339,6 +339,43 @@ Item {
     root.islandOpacity = 1.0
   }
 
+  // --- Per-section resets used by the collapsible settings groups ---------
+
+  function resetRevealDefaults() {
+    root.triggerThickness = 5
+  }
+
+  function resetShowTimingDefaults() {
+    root.showSlideDuration = 500
+    root.showFadeDuration = 400
+  }
+
+  function resetHideTimingDefaults() {
+    root.hideSlideDuration = 400
+    root.hideFadeDuration = 320
+  }
+
+  function resetCurveDefaults() {
+    root.customCurveEnabled = false
+    root.curveX1 = 0.25
+    root.curveY1 = 0.10
+    root.curveX2 = 0.25
+    root.curveY2 = 1.00
+  }
+
+  function resetTravelDefaults() {
+    root.slideDistancePercent = 100
+  }
+
+  function resetIslandGeometryDefaults() {
+    root.islandEdgeMargin = 8
+    root.islandPadding = 8
+    root.islandGap = 4
+    root.islandInset = 2
+    root.islandRadius = 12
+    root.islandOpacity = 1.0
+  }
+
   function refreshIssueStatus() {
     if (!root.statusUrl) {
       root.githubStatus = "Not configured"
