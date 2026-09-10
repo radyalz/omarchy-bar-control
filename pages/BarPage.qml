@@ -98,14 +98,24 @@ SettingsPage {
     resettable: true
     onResetRequested: if (root.service) root.service.resetColorDefaults()
 
-    Text { text: "Color source"; color: "#cbd1dc"; font.pixelSize: 12 }
+    Text { text: "Color source"; color: Color.foreground; font.pixelSize: 12 }
     ChoiceGroup {
       Layout.fillWidth: true
       options: ["Follow theme", "Custom"]
       value: root.customColors ? "Custom" : "Follow theme"
       enabled: root.service !== null
       onSelected: function(value) {
-        if (root.service) root.service.colorOverrideEnabled = (value === "Custom")
+        if (!root.service) return
+        var custom = (value === "Custom")
+        // Seed the editable values from the live theme colours so Custom
+        // starts where Follow theme left off rather than at old defaults.
+        if (custom && !root.service.colorOverrideEnabled) {
+          root.service.barColor = String(Color.bar.background)
+          root.service.islandColor = String(Color.bar.background)
+          root.service.textColor = String(Color.bar.text)
+          root.service.accentColor = String(Color.bar.active)
+        }
+        root.service.colorOverrideEnabled = custom
       }
     }
     Text {
