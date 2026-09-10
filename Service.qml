@@ -73,10 +73,13 @@ Item {
   property string issuesUrl: repositoryUrl + "/issues"
   property string statusUrl: ""
 
-  property string githubStatus: "Not configured"
+  property string githubStatus: "Not checked"
   property string githubStatusMessage:
-    "Add a statusUrl when the GitHub status feed is ready."
+    "Check for updates to compare this install against the latest GitHub release."
   property bool githubStatusLoading: false
+  property string latestVersion: ""
+  property string latestReleaseUrl: ""
+  property bool updateAvailable: false
 
   readonly property bool barConnected: bar !== null
   readonly property bool settingsHealthy: settingsLoaded
@@ -434,6 +437,90 @@ Item {
     root.islandColor = "#1e1e2e"
     root.textColor = "#cdd6f4"
     root.accentColor = "#89b4fa"
+  }
+
+  function versionCompare(a, b) {
+    var pa = String(a).replace(/^v/i, "").split(/[.\-+]/)
+    var pb = String(b).replace(/^v/i, "").split(/[.\-+]/)
+    for (var i = 0; i < Math.max(pa.length, pb.length); i++) {
+      var na = parseInt(pa[i] || "0", 10)
+      var nb = parseInt(pb[i] || "0", 10)
+      if (isNaN(na)) na = 0
+      if (isNaN(nb)) nb = 0
+      if (na !== nb) return na < nb ? -1 : 1
+    }
+    return 0
+  }
+
+  function checkForUpdate() {
+    var slug = String(root.repositoryUrl || "")
+      .replace(/^https?:\/\/github\.com\//i, "")
+      .replace(/\/+$/, "")
+    if (slug.split("/").length !== 2) {
+      root.githubStatus = "Not configured"
+      root.githubStatusMessage =
+        "repositoryUrl is not a github.com/owner/repo URL, so updates cannot be checked."
+      return
+    }
+
+    var current = root.manifest && root.manifest.version
+      ? root.manifest.version : ""
+
+    root.githubStatusLoading = true
+    root.githubStatus = "Checking"
+    root.githubStatusMessage = "Contacting GitHub for the latest release…"
+    root.updateAvailable = false
+
+    var request = new XMLHttpRequest()
+    request.onreadystatechange = function() {
+      if (request.readyState !== XMLHttpRequest.DONE)
+        return
+
+      root.githubStatusLoading = false
+
+      if (request.status === 404) {
+        root.githubStatus = "No releases"
+        root.githubStatusMessage =
+          "The repository has no published GitHub releases yet."
+        return
+      }
+      if (request.status < 200 || request.status >= 300) {
+        root.githubStatus = "Unavailable"
+        root.githubStatusMessage =
+          "Could not reach the GitHub releases API (HTTP " + request.status + ")."
+        return
+      }
+
+      try {
+        var data = JSON.parse(request.responseText)
+        var tag = String(data.tag_name || data.name || "").trim()
+        root.latestVersion = tag
+        root.latestReleaseUrl = String(data.html_url || "")
+        if (!tag) {
+          root.githubStatus = "Unknown"
+          root.githubStatusMessage = "The latest release did not report a version tag."
+          return
+        }
+        if (current && root.versionCompare(current, tag) < 0) {
+          root.updateAvailable = true
+          root.githubStatus = "Update available"
+          root.githubStatusMessage =
+            "Installed " + current + " · latest release " + tag
+            + ". Open the release page to download and reinstall."
+        } else {
+          root.githubStatus = "Up to date"
+          root.githubStatusMessage =
+            "Installed " + (current || "unknown") + " · latest release " + tag + "."
+        }
+      } catch (error) {
+        root.githubStatus = "Invalid response"
+        root.githubStatusMessage = "The GitHub releases API did not return valid JSON."
+      }
+    }
+
+    request.open("GET", "https://api.github.com/repos/" + slug + "/releases/latest")
+    request.setRequestHeader("Accept", "application/vnd.github+json")
+    request.send()
   }
 
   function refreshIssueStatus() {

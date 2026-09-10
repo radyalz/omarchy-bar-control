@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 InfoCard {
   id: root
@@ -8,13 +9,15 @@ InfoCard {
 
   RowLayout {
     Layout.fillWidth: true
+    spacing: 12
 
     ColumnLayout {
       Layout.fillWidth: true
+      spacing: 3
 
       Text {
         text: root.service ? root.service.githubStatus : "Unavailable"
-        color: "#f3f4f6"
+        color: root.service && root.service.updateAvailable ? Color.accent : Color.foreground
         font.pixelSize: 15
         font.weight: Font.DemiBold
       }
@@ -24,17 +27,30 @@ InfoCard {
         text: root.service
           ? root.service.githubStatusMessage
           : "Service is not available."
-        color: "#8b93a0"
+        color: Qt.alpha(Color.foreground, 0.6)
         font.pixelSize: 12
         wrapMode: Text.WordWrap
       }
     }
 
-    GlassButton {
-      text: root.service && root.service.githubStatusLoading
-        ? "Checking…" : "Check status"
-      enabled: root.service !== null && !root.service.githubStatusLoading
-      onClicked: if (root.service) root.service.refreshIssueStatus()
+    ColumnLayout {
+      Layout.alignment: Qt.AlignTop
+      spacing: 6
+      GlassButton {
+        Layout.alignment: Qt.AlignRight
+        text: root.service && root.service.githubStatusLoading
+          ? "Checking…" : "Check for updates"
+        enabled: root.service !== null && !root.service.githubStatusLoading
+        onClicked: if (root.service) root.service.checkForUpdate()
+      }
+      GlassButton {
+        Layout.alignment: Qt.AlignRight
+        visible: root.service && root.service.updateAvailable
+          && root.service.latestReleaseUrl !== ""
+        primary: true
+        text: "Open release"
+        onClicked: if (root.service) Qt.openUrlExternally(root.service.latestReleaseUrl)
+      }
     }
   }
 }
