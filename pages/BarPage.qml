@@ -1,10 +1,13 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 import "../components"
 
 SettingsPage {
   id: root
   property var service: null
+
+  readonly property bool customColors: root.service && root.service.colorOverrideEnabled
 
   PageTitle {
     title: "Placement & appearance"
@@ -91,42 +94,52 @@ SettingsPage {
 
   ExpandableSection {
     title: "Colors"
-    summary: root.service && root.service.colorOverrideEnabled ? "Custom" : "Theme default"
+    summary: root.customColors ? "Custom" : "Follow theme"
     resettable: true
     onResetRequested: if (root.service) root.service.resetColorDefaults()
 
-    ToggleRow {
-      label: "Custom colors"
-      description: "Override the theme colors for the bar. A few accent uses may not follow."
-      checked: root.service ? root.service.colorOverrideEnabled : false
+    Text { text: "Color source"; color: "#cbd1dc"; font.pixelSize: 12 }
+    ChoiceGroup {
+      Layout.fillWidth: true
+      options: ["Follow theme", "Custom"]
+      value: root.customColors ? "Custom" : "Follow theme"
       enabled: root.service !== null
-      onToggled: function(value) {
-        if (root.service) root.service.colorOverrideEnabled = value
+      onSelected: function(value) {
+        if (root.service) root.service.colorOverrideEnabled = (value === "Custom")
       }
+    }
+    Text {
+      Layout.fillWidth: true
+      text: root.customColors
+        ? "Editing your own colors. Switch to Follow theme to track the active Omarchy theme again."
+        : "Showing the active Omarchy theme colors. Switch to Custom to edit them."
+      color: "#828b9b"
+      font.pixelSize: 10
+      wrapMode: Text.WordWrap
     }
 
     ColorField {
       label: "Bar background"
-      value: root.service ? root.service.barColor : "#1e1e2e"
-      enabled: root.service && root.service.colorOverrideEnabled
+      value: root.customColors ? root.service.barColor : String(Color.bar.background)
+      enabled: root.customColors
       onEdited: function(value) { if (root.service) root.service.barColor = value }
     }
     ColorField {
       label: "Island background"
-      value: root.service ? root.service.islandColor : "#1e1e2e"
-      enabled: root.service && root.service.colorOverrideEnabled
+      value: root.customColors ? root.service.islandColor : String(Color.bar.background)
+      enabled: root.customColors
       onEdited: function(value) { if (root.service) root.service.islandColor = value }
     }
     ColorField {
       label: "Foreground / text"
-      value: root.service ? root.service.textColor : "#cdd6f4"
-      enabled: root.service && root.service.colorOverrideEnabled
+      value: root.customColors ? root.service.textColor : String(Color.bar.text)
+      enabled: root.customColors
       onEdited: function(value) { if (root.service) root.service.textColor = value }
     }
     ColorField {
       label: "Accent / active"
-      value: root.service ? root.service.accentColor : "#89b4fa"
-      enabled: root.service && root.service.colorOverrideEnabled
+      value: root.customColors ? root.service.accentColor : String(Color.bar.active)
+      enabled: root.customColors
       onEdited: function(value) { if (root.service) root.service.accentColor = value }
     }
   }
