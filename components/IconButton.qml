@@ -1,6 +1,5 @@
 import QtQuick
 import qs.Commons
-import qs.Ui
 
 // Small square icon button with a hover tooltip. Used where a text button
 // would be too bulky (e.g. a section's Reset control).
@@ -16,12 +15,14 @@ Rectangle {
   opacity: root.enabled ? 1 : 0.4
   color: Qt.alpha(Color.foreground, mouse.containsMouse ? 0.12 : 0.05)
   border.width: 1
-  border.color: Qt.alpha(Color.foreground, 0.1)
+  border.color: mouse.containsMouse ? Qt.alpha(Color.accent, 0.5) : Qt.alpha(Color.foreground, 0.1)
+  Behavior on color { ColorAnimation { duration: 110 } }
+  Behavior on border.color { ColorAnimation { duration: 110 } }
 
   Text {
     anchors.centerIn: parent
     text: root.icon
-    color: Qt.alpha(Color.foreground, 0.85)
+    color: mouse.containsMouse ? Color.foreground : Qt.alpha(Color.foreground, 0.85)
     font.pixelSize: 12
   }
 
@@ -34,9 +35,8 @@ Rectangle {
     onClicked: root.clicked()
   }
 
-  PanelToolTip {
-    visible: root.tooltip !== "" && mouse.containsMouse
+  TooltipBubble {
     text: root.tooltip
-    delay: 350
+    shown: mouse.containsMouse
   }
 }
