@@ -7,7 +7,7 @@ Rectangle {
 
   Layout.fillWidth: true
   implicitHeight: contentColumn.implicitHeight + 28
-  radius: 6
+  radius: 4
   color: Qt.rgba(1, 1, 1, 0.045)
   border.width: 1
   border.color: Qt.rgba(1, 1, 1, 0.075)

@@ -12,7 +12,7 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    radius: 6
+    radius: 4
     color: root.checked
       ? root.accent
       : Qt.rgba(1, 1, 1, 0.12)

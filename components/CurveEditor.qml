@@ -22,7 +22,7 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    radius: 6
+    radius: 4
     color: "#16181d"
     border.width: 1
     border.color: "#343840"

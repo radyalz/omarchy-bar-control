@@ -10,7 +10,7 @@ Rectangle {
 
   implicitWidth: label.implicitWidth + 22
   implicitHeight: 30
-  radius: 6
+  radius: 4
   color: root.active
     ? Qt.rgba(0.38, 0.52, 1, 0.34)
     : Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.10 : 0.055)

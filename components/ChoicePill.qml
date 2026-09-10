@@ -8,7 +8,7 @@ Rectangle {
 
   implicitWidth: label.implicitWidth + 22
   implicitHeight: 31
-  radius: 6
+  radius: 4
   opacity: root.enabled ? 1 : 0.38
   color: root.active
     ? Qt.rgba(0.38, 0.52, 1, 0.34)
