@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 Rectangle {
   id: root
@@ -11,11 +12,10 @@ Rectangle {
   implicitHeight: 42
   radius: 4
   color: root.active
-    ? Qt.rgba(0.38, 0.52, 1, 0.18)
-    : Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.055 : 0)
+    ? Qt.alpha(Color.accent, 0.18)
+    : Qt.alpha(Color.foreground, mouse.containsMouse ? 0.055 : 0)
   border.width: 1
-  border.color: root.active
-    ? Qt.rgba(0.56, 0.67, 1, 0.28) : "transparent"
+  border.color: root.active ? Qt.alpha(Color.accent, 0.3) : "transparent"
 
   Rectangle {
     width: 3
@@ -24,7 +24,7 @@ Rectangle {
     anchors.left: parent.left
     anchors.leftMargin: 7
     anchors.verticalCenter: parent.verticalCenter
-    color: "#91a7ff"
+    color: Color.accent
     opacity: root.active ? 1 : 0
   }
   Text {
@@ -34,7 +34,7 @@ Rectangle {
     anchors.rightMargin: 10
     anchors.verticalCenter: parent.verticalCenter
     text: root.text
-    color: root.active ? "#f5f7ff" : "#aeb6c4"
+    color: root.active ? Color.foreground : Qt.alpha(Color.foreground, 0.68)
     font.pixelSize: 12
     font.weight: root.active ? Font.DemiBold : Font.Normal
     elide: Text.ElideRight

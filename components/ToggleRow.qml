@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 // Label (+ optional description) on the left, a switch aligned to the right.
 // Shared by every "Custom ..." opt-in so they line up the same way.
@@ -18,14 +19,14 @@ RowLayout {
     spacing: 2
     Text {
       text: root.label
-      color: root.enabled ? "#d7dce6" : "#626a78"
+      color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
       font.pixelSize: 12
     }
     Text {
       visible: root.description !== ""
       Layout.fillWidth: true
       text: root.description
-      color: root.enabled ? "#7f8793" : "#5c636f"
+      color: Qt.alpha(Color.foreground, root.enabled ? 0.55 : 0.3)
       font.pixelSize: 10
       wrapMode: Text.WordWrap
     }

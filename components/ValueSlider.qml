@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls as QQC
 import QtQuick.Layouts
+import qs.Commons
 
 // One compact setting row: label (+ optional description) on the left, a slider
 // in the middle, an editable number field on the right. Collapses to a stack
@@ -34,14 +35,14 @@ ColumnLayout {
       spacing: 1
       Text {
         text: root.label
-        color: root.enabled ? "#cbd1dc" : "#626a78"
+        color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
         font.pixelSize: 12
       }
       Text {
         visible: root.description !== ""
         Layout.fillWidth: true
         text: root.description
-        color: root.enabled ? "#828b9b" : "#5c636f"
+        color: root.enabled ? Qt.alpha(Color.foreground, 0.6) : Qt.alpha(Color.foreground, 0.35)
         font.pixelSize: 10
         wrapMode: Text.WordWrap
       }
@@ -79,12 +80,12 @@ ColumnLayout {
         width: slider.availableWidth
         height: 5
         radius: 2
-        color: Qt.rgba(1, 1, 1, 0.09)
+        color: Qt.alpha(Color.foreground, 0.12)
         Rectangle {
           width: parent.width * slider.visualPosition
           height: parent.height
           radius: 2
-          color: "#829cff"
+          color: Color.accent
         }
       }
       handle: Rectangle {
@@ -95,9 +96,9 @@ ColumnLayout {
         width: 16
         height: 16
         radius: 4
-        color: "#f7f9ff"
+        color: Color.foreground
         border.width: 3
-        border.color: "#829cff"
+        border.color: Color.accent
       }
     }
 

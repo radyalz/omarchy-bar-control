@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 // Compact editable numeric field. Parses on Enter / focus-out, clamps to
 // [from, to], snaps to stepSize, then emits edited(). Stays in sync with an
@@ -19,9 +20,9 @@ Rectangle {
   implicitWidth: root.decimals > 0 ? 84 : 72
   implicitHeight: 26
   radius: 4
-  color: root.enabled ? Qt.rgba(1, 1, 1, 0.06) : Qt.rgba(1, 1, 1, 0.03)
+  color: root.enabled ? Qt.alpha(Color.foreground, 0.06) : Qt.alpha(Color.foreground, 0.03)
   border.width: 1
-  border.color: input.activeFocus ? "#829cff" : Qt.rgba(1, 1, 1, 0.10)
+  border.color: input.activeFocus ? Color.accent : Qt.alpha(Color.foreground, 0.12)
 
   function formatted(n) {
     return Number(n).toFixed(root.decimals)
@@ -61,8 +62,8 @@ Rectangle {
       horizontalAlignment: TextInput.AlignHCenter
       clip: true
       enabled: root.enabled
-      color: root.enabled ? "#e6eaf3" : "#6b7280"
-      selectionColor: "#829cff"
+      color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
+      selectionColor: Color.accent
       font.pixelSize: 11
       selectByMouse: true
       inputMethodHints: Qt.ImhFormattedNumbersOnly
@@ -75,7 +76,7 @@ Rectangle {
     Text {
       visible: root.suffix !== ""
       text: root.suffix.trim()
-      color: root.enabled ? "#7f8793" : "#5c636f"
+      color: Qt.alpha(Color.foreground, root.enabled ? 0.55 : 0.3)
       font.pixelSize: 10
     }
   }

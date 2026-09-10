@@ -1,4 +1,5 @@
 import QtQuick
+import qs.Commons
 import qs.Ui
 
 // Small square icon button with a hover tooltip. Used where a text button
@@ -13,14 +14,14 @@ Rectangle {
   implicitHeight: 24
   radius: 4
   opacity: root.enabled ? 1 : 0.4
-  color: mouse.containsMouse ? Qt.rgba(1, 1, 1, 0.10) : Qt.rgba(1, 1, 1, 0.045)
+  color: Qt.alpha(Color.foreground, mouse.containsMouse ? 0.12 : 0.05)
   border.width: 1
-  border.color: Qt.rgba(1, 1, 1, 0.09)
+  border.color: Qt.alpha(Color.foreground, 0.1)
 
   Text {
     anchors.centerIn: parent
     text: root.icon
-    color: "#dfe3ec"
+    color: Qt.alpha(Color.foreground, 0.85)
     font.pixelSize: 12
   }
 

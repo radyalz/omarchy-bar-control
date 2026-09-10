@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 // One colour row: label (+ optional description), a preview swatch, and a hex
 // text field. Accepts #rrggbb or #aarrggbb; the field border turns red while
@@ -37,14 +38,14 @@ RowLayout {
     spacing: 2
     Text {
       text: root.label
-      color: root.enabled ? "#cbd1dc" : "#626a78"
+      color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
       font.pixelSize: 12
     }
     Text {
       visible: root.description !== ""
       Layout.fillWidth: true
       text: root.description
-      color: root.enabled ? "#828b9b" : "#5c636f"
+      color: Qt.alpha(Color.foreground, root.enabled ? 0.6 : 0.35)
       font.pixelSize: 10
       wrapMode: Text.WordWrap
     }
@@ -58,7 +59,7 @@ RowLayout {
     opacity: root.enabled ? 1 : 0.4
     color: root.valid(root.value) ? root.value : "transparent"
     border.width: 1
-    border.color: Qt.rgba(1, 1, 1, 0.18)
+    border.color: Qt.alpha(Color.foreground, 0.2)
   }
 
   Rectangle {
@@ -66,11 +67,11 @@ RowLayout {
     implicitWidth: 100
     implicitHeight: 26
     radius: 4
-    color: root.enabled ? Qt.rgba(1, 1, 1, 0.06) : Qt.rgba(1, 1, 1, 0.03)
+    color: root.enabled ? Qt.alpha(Color.foreground, 0.06) : Qt.alpha(Color.foreground, 0.03)
     border.width: 1
     border.color: hexInput.activeFocus
-      ? "#829cff"
-      : (root.valid(hexInput.text) ? Qt.rgba(1, 1, 1, 0.10) : "#e0736f")
+      ? Color.accent
+      : (root.valid(hexInput.text) ? Qt.alpha(Color.foreground, 0.1) : Color.urgent)
 
     TextInput {
       id: hexInput
@@ -80,8 +81,8 @@ RowLayout {
       verticalAlignment: TextInput.AlignVCenter
       clip: true
       enabled: root.enabled
-      color: root.enabled ? "#e6eaf3" : "#6b7280"
-      selectionColor: "#829cff"
+      color: root.enabled ? Color.foreground : Qt.alpha(Color.foreground, 0.4)
+      selectionColor: Color.accent
       font.pixelSize: 11
       selectByMouse: true
       text: root.value
