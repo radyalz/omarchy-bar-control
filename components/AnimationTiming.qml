@@ -15,6 +15,9 @@ ColumnLayout {
 
   ValueSlider {
     label: "Slide duration"
+    description: root.showing
+      ? "How long the bar takes to slide into view when revealed."
+      : "How long the bar takes to slide out of view when hidden."
     from: 50
     to: 3000
     stepSize: 50
@@ -35,6 +38,9 @@ ColumnLayout {
 
   ValueSlider {
     label: "Fade duration"
+    description: root.showing
+      ? "How long the bar takes to fade in when revealed."
+      : "How long the bar takes to fade out when hidden."
     from: 50
     to: 3000
     stepSize: 50

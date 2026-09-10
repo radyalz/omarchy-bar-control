@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 ColumnLayout {
   id: root
@@ -10,6 +11,13 @@ ColumnLayout {
   spacing: 12
 
   SectionLabel { label: "Control points" }
+  Text {
+    Layout.fillWidth: true
+    text: "The two handles of the cubic Bézier curve, same as dragging them on the graph. X is time (0–1); Y is progress and can go past 0–1 for anticipation or overshoot."
+    color: Qt.alpha(Color.foreground, 0.6)
+    font.pixelSize: 10
+    wrapMode: Text.WordWrap
+  }
 
   ValueSlider {
     label: "X1"

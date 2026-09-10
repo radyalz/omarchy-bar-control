@@ -1,11 +1,12 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 InfoCard {
   id: root
   property var service: null
 
-  Text { text: "Animation type"; color: "#cbd1dc"; font.pixelSize: 12 }
+  Text { text: "Animation type"; color: Color.foreground; font.pixelSize: 12 }
   ChoiceGroup {
     Layout.fillWidth: true
     options: ["Slide + Fade", "Slide", "Fade"]
@@ -13,7 +14,15 @@ InfoCard {
     enabled: root.service !== null
     onSelected: function(value) { if (root.service) root.service.animationMode = value }
   }
-  Text { text: "Feel preset"; color: "#cbd1dc"; font.pixelSize: 12 }
+  Text {
+    Layout.fillWidth: true
+    text: "How the bar enters and leaves: slide moves it in from the edge, fade changes its opacity, or both together."
+    color: Qt.alpha(Color.foreground, 0.6)
+    font.pixelSize: 10
+    wrapMode: Text.WordWrap
+  }
+
+  Text { text: "Feel preset"; color: Color.foreground; font.pixelSize: 12 }
   ChoiceGroup {
     Layout.fillWidth: true
     options: ["Smooth", "Snappy", "Soft", "Custom"]
@@ -22,8 +31,17 @@ InfoCard {
     onSelected: function(value) { if (root.service) root.service.setAnimationPreset(value) }
   }
   Text {
+    Layout.fillWidth: true
+    text: "A starting point for the timings and easing below. Editing any of them switches the preset to Custom."
+    color: Qt.alpha(Color.foreground, 0.6)
+    font.pixelSize: 10
+    wrapMode: Text.WordWrap
+  }
+
+  Text {
     text: "Easing family"
-    color: root.service && root.service.customCurveEnabled ? "#7c828e" : "#cbd1dc"
+    color: root.service && root.service.customCurveEnabled
+      ? Qt.alpha(Color.foreground, 0.45) : Color.foreground
     font.pixelSize: 12
   }
   ChoiceGroup {
@@ -40,7 +58,7 @@ InfoCard {
     visible: root.service && root.service.customCurveEnabled
     Layout.fillWidth: true
     text: "The custom motion curve is on, so it sets the easing. Turn it off in the Motion curve section to pick an easing family."
-    color: "#828b9b"
+    color: Qt.alpha(Color.foreground, 0.6)
     font.pixelSize: 10
     wrapMode: Text.WordWrap
   }
