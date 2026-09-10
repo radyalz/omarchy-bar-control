@@ -8,11 +8,16 @@ QQC.ScrollView {
   default property alias content: contentColumn.data
   contentWidth: availableWidth
 
+  // Padding rather than a manual x/y offset so the scrollable area includes
+  // the trailing gap and the last section clears the window edge.
+  topPadding: 22
+  leftPadding: 22
+  rightPadding: 22
+  bottomPadding: 44
+
   ColumnLayout {
     id: contentColumn
-    x: 22
-    y: 22
-    width: Math.max(0, root.availableWidth - 44)
+    width: Math.max(0, root.availableWidth)
     spacing: 14
   }
 }
