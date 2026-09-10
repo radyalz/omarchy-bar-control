@@ -17,7 +17,7 @@ ColumnLayout {
     label: "Slide duration"
     from: 50
     to: 3000
-    stepSize: 10
+    stepSize: 50
     value: root.service
       ? (root.showing ? root.service.showSlideDuration : root.service.hideSlideDuration)
       : (root.showing ? 500 : 400)
@@ -37,7 +37,7 @@ ColumnLayout {
     label: "Fade duration"
     from: 50
     to: 3000
-    stepSize: 10
+    stepSize: 50
     value: root.service
       ? (root.showing ? root.service.showFadeDuration : root.service.hideFadeDuration)
       : (root.showing ? 400 : 320)
