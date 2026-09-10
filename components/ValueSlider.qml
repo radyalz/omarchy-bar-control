@@ -32,6 +32,12 @@ ColumnLayout {
   QQC.Slider {
     id: slider
     Layout.fillWidth: true
+    // The custom handle/background are bare Rectangles with no implicit size,
+    // so without this the control collapses to ~0 height and there is nothing
+    // to grab. Give it a real hit area.
+    implicitHeight: 24
+    topPadding: 0
+    bottomPadding: 0
     from: root.from; to: root.to; stepSize: root.stepSize
     enabled: root.enabled; onMoved: root.edited(value)
 
@@ -48,12 +54,14 @@ ColumnLayout {
 
     background: Rectangle {
       x: slider.leftPadding; y: slider.topPadding + slider.availableHeight / 2 - height / 2
+      implicitWidth: 160; implicitHeight: 5
       width: slider.availableWidth; height: 5; radius: 3; color: Qt.rgba(1, 1, 1, 0.09)
       Rectangle { width: parent.width * slider.visualPosition; height: parent.height; radius: 3; color: "#829cff" }
     }
     handle: Rectangle {
       x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
       y: slider.topPadding + slider.availableHeight / 2 - height / 2
+      implicitWidth: 16; implicitHeight: 16
       width: 16; height: 16; radius: 8; color: "#f7f9ff"
       border.width: 3; border.color: "#829cff"
     }
