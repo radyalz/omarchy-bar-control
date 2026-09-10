@@ -167,20 +167,16 @@ Item {
     autohideRuntime.setEdgeHovered(hovered)
   }
 
+  // The bar only mirrors the settings file; it never writes it. Watch for
+  // changes from the advanced panel and the popover instead of polling.
   FileView {
     id: autohideSettingsFile
     path: root.autohideSettingsPath
-    watchChanges: false
+    watchChanges: true
     printErrors: false
     onLoaded: root.loadAutohideSettings(text())
     onLoadFailed: root.loadAutohideSettings("")
-  }
-
-  Timer {
-    interval: 75
-    repeat: true
-    running: true
-    onTriggered: autohideSettingsFile.reload()
+    onFileChanged: reload()
   }
   property var fallbackBarConfig: ({
     position: "top",

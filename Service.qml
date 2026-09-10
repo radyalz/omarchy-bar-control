@@ -74,16 +74,24 @@ Item {
 
   property bool settingsLoaded: false
   property bool hydrating: false
-  property double suppressReloadUntil: 0
+  // Exact text of the last payload this surface wrote. Used to ignore the
+  // watcher echo of our own write instead of the old time-window suppression.
+  property string lastWrittenText: ""
 
   FileView {
     id: settingsFile
     path: root.settingsPath
-    watchChanges: false
+    // Event-driven: react to writes from the bar popover or any other surface
+    // the moment they land, rather than polling the file on a timer.
+    watchChanges: true
+    // Makes reload() + text() synchronous so saveSettings() can safely
+    // read-modify-write without racing an async load.
+    blockLoading: true
     atomicWrites: true
     printErrors: false
     onLoaded: root.loadSettings(text())
     onLoadFailed: root.loadSettings("")
+    onFileChanged: reload()
   }
 
   Timer {
@@ -91,16 +99,6 @@ Item {
     interval: 25
     repeat: false
     onTriggered: root.saveSettings()
-  }
-
-  Timer {
-    interval: 150
-    repeat: true
-    running: root.settingsLoaded
-    onTriggered: {
-      if (Date.now() >= root.suppressReloadUntil)
-        settingsFile.reload()
-    }
   }
 
   ControlBridge {
@@ -126,6 +124,11 @@ Item {
   }
 
   function loadSettings(raw) {
+    // The watcher re-delivers our own write; nothing changed, so skip the
+    // hydrate cycle. Always process the first load so settingsLoaded latches.
+    if (root.settingsLoaded && String(raw) === root.lastWrittenText)
+      return
+
     var firstLoad = !root.settingsLoaded
     var data = null
 
@@ -216,12 +219,26 @@ Item {
   function scheduleSave() {
     if (!root.settingsLoaded || root.hydrating)
       return
-    root.suppressReloadUntil = Date.now() + 250
     saveTimer.restart()
   }
 
   function saveSettings() {
-    var data = {
+    // Read-modify-write. Re-read the file first (blockLoading makes this
+    // synchronous) and merge our known fields onto whatever is on disk right
+    // now, so a concurrent write from the bar popover or another surface keeps
+    // any keys this surface does not own instead of being clobbered wholesale.
+    settingsFile.reload()
+
+    var current = {}
+    try {
+      var raw = settingsFile.text()
+      if (String(raw || "").trim() !== "")
+        current = JSON.parse(raw) || {}
+    } catch (error) {
+      current = {}
+    }
+
+    var known = {
       version: 3,
       enabled: root.enabled,
       position: root.position,
@@ -248,8 +265,14 @@ Item {
       islandRadius: root.islandRadius,
       islandOpacity: root.islandOpacity
     }
-    root.suppressReloadUntil = Date.now() + 200
-    settingsFile.setText(JSON.stringify(data, null, 2) + "\n")
+    for (var key in known)
+      current[key] = known[key]
+
+    var serialized = JSON.stringify(current, null, 2) + "\n"
+    if (serialized === root.lastWrittenText)
+      return
+    root.lastWrittenText = serialized
+    settingsFile.setText(serialized)
   }
 
   function setBarPosition(value) {
