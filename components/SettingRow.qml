@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 RowLayout {
   id: root
@@ -10,7 +11,7 @@ RowLayout {
 
   Text {
     text: root.label
-    color: "#cbd1dc"
+    color: Qt.alpha(Color.foreground, 0.85)
     font.pixelSize: 12
   }
   Item { Layout.fillWidth: true }

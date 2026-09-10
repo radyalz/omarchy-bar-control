@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 ColumnLayout {
   id: root
@@ -11,10 +12,10 @@ ColumnLayout {
   RowLayout {
     Layout.fillWidth: true
     spacing: 9
-    Rectangle { width: 4; height: 24; radius: 2; color: "#91a7ff" }
+    Rectangle { width: 4; height: 24; radius: 2; color: Color.accent }
     Text {
       text: root.title
-      color: "#f7f8fc"
+      color: Color.foreground
       font.pixelSize: 23
       font.weight: Font.DemiBold
     }
@@ -22,7 +23,7 @@ ColumnLayout {
   Text {
     Layout.fillWidth: true
     text: root.description
-    color: "#9199a8"
+    color: Qt.alpha(Color.foreground, 0.6)
     font.pixelSize: 12
     wrapMode: Text.WordWrap
   }

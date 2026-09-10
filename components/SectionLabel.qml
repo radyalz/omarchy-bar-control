@@ -1,9 +1,10 @@
 import QtQuick
+import qs.Commons
 
 Text {
   property string label: ""
   text: label.toUpperCase()
-  color: "#7f8ba1"
+  color: Qt.alpha(Color.foreground, 0.55)
   font.pixelSize: 10
   font.weight: Font.Bold
   font.letterSpacing: 1.2

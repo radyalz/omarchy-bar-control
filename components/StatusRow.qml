@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 RowLayout {
   id: root
@@ -14,12 +15,12 @@ RowLayout {
     width: 10
     height: 10
     radius: 4
-    color: root.healthy ? "#9ece6a" : "#f7768e"
+    color: root.healthy ? "#76d39b" : Color.urgent
   }
 
   Text {
     text: root.label
-    color: "#d1d5db"
+    color: Qt.alpha(Color.foreground, 0.8)
     font.pixelSize: 13
   }
 
@@ -27,7 +28,7 @@ RowLayout {
 
   Text {
     text: root.detail
-    color: "#9ca3af"
+    color: Qt.alpha(Color.foreground, 0.6)
     font.pixelSize: 12
   }
 }

@@ -1,4 +1,5 @@
 import QtQuick
+import qs.Commons
 
 Item {
   id: root
@@ -23,9 +24,9 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: 4
-    color: "#16181d"
+    color: Qt.alpha(Color.foreground, 0.05)
     border.width: 1
-    border.color: "#343840"
+    border.color: Qt.alpha(Color.foreground, 0.14)
   }
 
   CurveCanvas {

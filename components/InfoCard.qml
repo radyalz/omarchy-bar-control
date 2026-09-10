@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 Rectangle {
   id: root
@@ -8,9 +9,9 @@ Rectangle {
   Layout.fillWidth: true
   implicitHeight: contentColumn.implicitHeight + 28
   radius: 4
-  color: Qt.rgba(1, 1, 1, 0.045)
+  color: Qt.alpha(Color.foreground, 0.045)
   border.width: 1
-  border.color: Qt.rgba(1, 1, 1, 0.075)
+  border.color: Qt.alpha(Color.foreground, 0.075)
 
   Rectangle {
     anchors.left: parent.left
@@ -18,7 +19,7 @@ Rectangle {
     anchors.bottom: parent.bottom
     width: 2
     radius: 2
-    color: "#829cff"
+    color: Color.accent
     opacity: 0.48
   }
   ColumnLayout {

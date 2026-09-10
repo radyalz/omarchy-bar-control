@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 InfoCard {
   id: root
@@ -10,12 +11,12 @@ InfoCard {
     spacing: 14
     ColumnLayout {
       Layout.fillWidth: true; spacing: 3
-      Text { text: "Autohide"; color: "#f4f6fb"; font.pixelSize: 16; font.weight: Font.DemiBold }
+      Text { text: "Autohide"; color: Color.foreground; font.pixelSize: 16; font.weight: Font.DemiBold }
       Text {
         Layout.fillWidth: true
         text: root.service && root.service.enabled
           ? "Active · reveal from the screen edge" : "Disabled · bar stays visible"
-        color: root.service && root.service.enabled ? "#8fb6ff" : "#8d95a3"
+        color: root.service && root.service.enabled ? Color.accent : Qt.alpha(Color.foreground, 0.6)
         font.pixelSize: 11; wrapMode: Text.WordWrap
       }
     }

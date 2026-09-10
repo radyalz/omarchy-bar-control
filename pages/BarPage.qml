@@ -135,7 +135,7 @@ SettingsPage {
       text: root.customColors
         ? "Editing your own colors. Switch to Follow theme to track the active Omarchy theme again."
         : "Showing the active Omarchy theme colors. Switch to Custom to edit them."
-      color: "#828b9b"
+      color: Qt.alpha(Color.foreground, 0.6)
       font.pixelSize: 10
       wrapMode: Text.WordWrap
     }

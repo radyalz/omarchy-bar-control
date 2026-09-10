@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.Commons
 
 InfoCard {
   id: root
@@ -7,7 +8,7 @@ InfoCard {
 
   Text {
     text: "Project & support"
-    color: "#f3f4f6"
+    color: Color.foreground
     font.pixelSize: 15
     font.weight: Font.DemiBold
   }
@@ -28,7 +29,7 @@ InfoCard {
   Text {
     Layout.fillWidth: true
     text: "Use Diagnostics before reporting a problem so the report includes the bar, settings, trigger and integration state."
-    color: "#8b93a0"
+    color: Qt.alpha(Color.foreground, 0.6)
     font.pixelSize: 11
     wrapMode: Text.WordWrap
   }

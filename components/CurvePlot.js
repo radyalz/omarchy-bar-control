@@ -27,7 +27,15 @@ function dot(ctx, x, y, radius, fill) {
   ctx.fill()
 }
 
-function paint(ctx, width, height, x1, y1, x2, y2, previewT) {
+function paint(ctx, width, height, x1, y1, x2, y2, previewT, colors) {
+  colors = colors || {}
+  var cGrid = colors.grid || "#2b2f36"
+  var cGuide = colors.guide || "#626976"
+  var cCurve = colors.curve || "#d8dee9"
+  var cEnd = colors.endpoint || "#8b949e"
+  var cHandle = colors.handle || "#7aa2f7"
+  var cPreview = colors.preview || "#9ece6a"
+
   ctx.clearRect(0, 0, width, height)
   var left = 24
   var right = width - 24
@@ -35,7 +43,7 @@ function paint(ctx, width, height, x1, y1, x2, y2, previewT) {
   var bottom = height - 24
 
   ctx.lineWidth = 1
-  ctx.strokeStyle = "#2b2f36"
+  ctx.strokeStyle = cGrid
   for (var i = 0; i <= 4; i++) {
     var gx = left + (right - left) * i / 4
     var gy = top + (bottom - top) * i / 4
@@ -53,24 +61,24 @@ function paint(ctx, width, height, x1, y1, x2, y2, previewT) {
   var c2y = pxY(height, y2)
 
   ctx.lineWidth = 1.5
-  ctx.strokeStyle = "#626976"
+  ctx.strokeStyle = cGuide
   ctx.beginPath()
   ctx.moveTo(startX, startY); ctx.lineTo(c1x, c1y)
   ctx.moveTo(endX, endY); ctx.lineTo(c2x, c2y)
   ctx.stroke()
 
   ctx.lineWidth = 3
-  ctx.strokeStyle = "#d8dee9"
+  ctx.strokeStyle = cCurve
   ctx.beginPath()
   ctx.moveTo(startX, startY)
   ctx.bezierCurveTo(c1x, c1y, c2x, c2y, endX, endY)
   ctx.stroke()
 
-  dot(ctx, startX, startY, 4, "#8b949e")
-  dot(ctx, endX, endY, 4, "#8b949e")
-  dot(ctx, c1x, c1y, 8, "#7aa2f7")
-  dot(ctx, c2x, c2y, 8, "#bb9af7")
+  dot(ctx, startX, startY, 4, cEnd)
+  dot(ctx, endX, endY, 4, cEnd)
+  dot(ctx, c1x, c1y, 8, cHandle)
+  dot(ctx, c2x, c2y, 8, cHandle)
 
   var p = curvePoint(previewT, x1, y1, x2, y2)
-  dot(ctx, pxX(width, p.x), pxY(height, p.y), 6, "#9ece6a")
+  dot(ctx, pxX(width, p.x), pxY(height, p.y), 6, cPreview)
 }
