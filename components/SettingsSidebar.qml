@@ -51,5 +51,13 @@ Rectangle {
         color: "#8792a4"; font.pixelSize: 10
       }
     }
+    Rectangle { Layout.fillWidth: true; height: 1; color: Qt.rgba(1, 1, 1, 0.07) }
+    Text {
+      Layout.fillWidth: true
+      text: "© 2026 Radyalz"
+      color: "#6b7688"
+      font.pixelSize: 10
+      elide: Text.ElideRight
+    }
   }
 }
