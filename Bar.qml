@@ -61,6 +61,7 @@ Item {
     property bool barSizeOverrideEnabled: false
     property int barThickness: 32
     property int iconScale: 100
+    property int fontScale: 100
 
     property bool colorOverrideEnabled: false
     property string barColor: "#1e1e2e"
@@ -169,6 +170,8 @@ Item {
       autohideSettings.barThickness = Math.max(18, Math.min(96, Math.round(Number(data.barThickness))))
     if (isFinite(Number(data.iconScale)))
       autohideSettings.iconScale = Math.max(60, Math.min(180, Math.round(Number(data.iconScale))))
+    if (isFinite(Number(data.fontScale)))
+      autohideSettings.fontScale = Math.max(60, Math.min(180, Math.round(Number(data.fontScale))))
 
     if (typeof data.colorOverrideEnabled === "boolean")
       autohideSettings.colorOverrideEnabled = data.colorOverrideEnabled
@@ -187,27 +190,35 @@ Item {
     }
 
     applyBarConfig()
-    applyIconScale()
+    applyScales()
     if (!autohideSettings.enabled)
       root.barHidden = false
   }
 
-  // Best effort: Omarchy's BarIconButton reads Style.bar.icon* straight from
-  // the Style singleton, so the only way to nudge icon sizing from here is to
-  // push scaled values into Style.barOverrides. A bare theme reload clears
-  // them until the next settings change re-applies here.
+  // Best effort: Omarchy's BarIconButton reads Style.bar.icon* and every text
+  // size derives from Style.fontBaseSize, both on the Style singleton, so the
+  // only lever from here is to push scaled values into it. A bare theme reload
+  // clears them until the next settings change re-applies here. Font scale is
+  // shell-wide, not bar-only.
   readonly property var iconTokenBase: ({ "icon-slot": 27, "icon-canvas": 16, "icon-font": 13 })
-  function applyIconScale() {
-    var scale = autohideSettings.barSizeOverrideEnabled
+  property int themeFontBaseSize: 0
+  function applyScales() {
+    if (root.themeFontBaseSize <= 0) return
+
+    var iconScale = autohideSettings.barSizeOverrideEnabled
       ? Math.max(0.6, Math.min(1.8, autohideSettings.iconScale / 100)) : 1
     var next = {}
     var existing = Style.barOverrides || ({})
     for (var k in existing) next[k] = existing[k]
     for (var token in root.iconTokenBase) {
-      if (scale === 1) delete next[token]
-      else next[token] = Math.round(root.iconTokenBase[token] * scale)
+      if (iconScale === 1) delete next[token]
+      else next[token] = Math.round(root.iconTokenBase[token] * iconScale)
     }
     Style.barOverrides = next
+
+    var fontScale = autohideSettings.barSizeOverrideEnabled
+      ? Math.max(0.6, Math.min(1.8, autohideSettings.fontScale / 100)) : 1
+    Style.fontBaseSize = Math.max(6, Math.round(root.themeFontBaseSize * fontScale))
   }
 
   function setAutohideEdgeHovered(hovered) {
@@ -838,7 +849,12 @@ Item {
     return source ? Util.fileUrl(source) : ""
   }
 
-  Component.onCompleted: { applyBarConfig(); applyIconScale() }
+  Component.onCompleted: {
+    if (root.themeFontBaseSize <= 0)
+      root.themeFontBaseSize = Style.fontBaseSize
+    applyBarConfig()
+    applyScales()
+  }
 
   // Revealing the indicators widens their section, which can slide a neighbour
   // under a stationary pointer. Collapsing on that un-hover would move it back

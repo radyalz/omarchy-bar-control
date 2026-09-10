@@ -57,6 +57,7 @@ Item {
   property bool barSizeOverrideEnabled: false
   property int barThickness: 32
   property int iconScale: 100
+  property int fontScale: 100
 
   // --- Colors ----------------------------------------------------------
   // Off by default so the bar tracks the active Omarchy theme.
@@ -236,6 +237,8 @@ Item {
         root.clampInt(data.barThickness, 18, 96, root.barThickness)
       root.iconScale =
         root.clampInt(data.iconScale, 60, 180, root.iconScale)
+      root.fontScale =
+        root.clampInt(data.fontScale, 60, 180, root.fontScale)
 
       if (typeof data.colorOverrideEnabled === "boolean")
         root.colorOverrideEnabled = data.colorOverrideEnabled
@@ -294,6 +297,7 @@ Item {
       barSizeOverrideEnabled: root.barSizeOverrideEnabled,
       barThickness: root.barThickness,
       iconScale: root.iconScale,
+      fontScale: root.fontScale,
       colorOverrideEnabled: root.colorOverrideEnabled,
       barColor: root.barColor,
       islandColor: root.islandColor,
@@ -421,6 +425,7 @@ Item {
     root.barSizeOverrideEnabled = false
     root.barThickness = 32
     root.iconScale = 100
+    root.fontScale = 100
   }
 
   function resetColorDefaults() {
@@ -521,6 +526,7 @@ Item {
   onBarSizeOverrideEnabledChanged: root.scheduleSave()
   onBarThicknessChanged: root.scheduleSave()
   onIconScaleChanged: root.scheduleSave()
+  onFontScaleChanged: root.scheduleSave()
   onColorOverrideEnabledChanged: root.scheduleSave()
   onBarColorChanged: root.scheduleSave()
   onIslandColorChanged: root.scheduleSave()

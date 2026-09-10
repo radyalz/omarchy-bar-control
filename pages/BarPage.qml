@@ -54,14 +54,15 @@ SettingsPage {
   ExpandableSection {
     title: "Bar size"
     summary: root.service && root.service.barSizeOverrideEnabled
-      ? root.service.barThickness + " px · " + root.service.iconScale + "%"
+      ? root.service.barThickness + " px · icons " + root.service.iconScale
+        + "% · text " + root.service.fontScale + "%"
       : "Theme default"
     resettable: true
     onResetRequested: if (root.service) root.service.resetBarSizeDefaults()
 
     ToggleRow {
       label: "Custom bar size"
-      description: "Override the theme's bar thickness and icon scale."
+      description: "Override the theme's bar thickness, icon scale and text scale."
       checked: root.service ? root.service.barSizeOverrideEnabled : false
       enabled: root.service !== null
       onToggled: function(value) {
@@ -82,12 +83,23 @@ SettingsPage {
 
     ValueSlider {
       label: "Icon scale"
-      description: "Best effort — some Omarchy widgets size their own icons and may not follow."
+      description: "Scales bar widget icons. Best effort — some Omarchy widgets size their own icons and may not follow."
       from: 60; to: 180; stepSize: 5; suffix: " %"
       value: root.service ? root.service.iconScale : 100
       enabled: root.service && root.service.barSizeOverrideEnabled
       onEdited: function(value) {
         if (root.service) root.service.iconScale = Math.round(value)
+      }
+    }
+
+    ValueSlider {
+      label: "Text scale"
+      description: "Scales the bar's text. This adjusts the shell's base font size, so other shell text follows too."
+      from: 60; to: 180; stepSize: 5; suffix: " %"
+      value: root.service ? root.service.fontScale : 100
+      enabled: root.service && root.service.barSizeOverrideEnabled
+      onEdited: function(value) {
+        if (root.service) root.service.fontScale = Math.round(value)
       }
     }
   }
