@@ -9,7 +9,7 @@ Rectangle {
 
   Layout.fillWidth: true
   implicitHeight: 42
-  radius: 11
+  radius: 4
   color: root.active
     ? Qt.rgba(0.38, 0.52, 1, 0.18)
     : Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.055 : 0)

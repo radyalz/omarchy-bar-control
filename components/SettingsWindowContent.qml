@@ -11,7 +11,7 @@ Rectangle {
   signal pageSelected(int index)
   signal closeRequested()
 
-  radius: 20
+  radius: 6
   clip: true
   color: Qt.rgba(Color.background.r, Color.background.g, Color.background.b, 0.91)
   border.width: 1

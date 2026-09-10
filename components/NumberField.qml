@@ -18,7 +18,7 @@ Rectangle {
 
   implicitWidth: root.decimals > 0 ? 84 : 72
   implicitHeight: 26
-  radius: 8
+  radius: 4
   color: root.enabled ? Qt.rgba(1, 1, 1, 0.06) : Qt.rgba(1, 1, 1, 0.03)
   border.width: 1
   border.color: input.activeFocus ? "#829cff" : Qt.rgba(1, 1, 1, 0.10)

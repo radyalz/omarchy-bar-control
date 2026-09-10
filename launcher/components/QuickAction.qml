@@ -10,7 +10,7 @@ Rectangle {
 
   width: parent ? parent.width : 300
   implicitHeight: 38
-  radius: 11
+  radius: 4
   color: root.primary
     ? Qt.rgba(0.38, 0.52, 1, mouse.containsMouse ? 0.46 : 0.34)
     : Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.10 : 0.055)

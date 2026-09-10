@@ -13,7 +13,7 @@ RowLayout {
   Rectangle {
     width: 10
     height: 10
-    radius: 5
+    radius: 4
     color: root.healthy ? "#9ece6a" : "#f7768e"
   }
 
