@@ -64,10 +64,10 @@ Item {
     property int fontScale: 100
 
     property bool colorOverrideEnabled: false
-    property string barColor: "#1e1e2e"
-    property string islandColor: "#1e1e2e"
-    property string textColor: "#cdd6f4"
-    property string accentColor: "#89b4fa"
+    property color barColor: "#1e1e2e"
+    property color islandColor: "#1e1e2e"
+    property color textColor: "#cdd6f4"
+    property color accentColor: "#89b4fa"
 
     // Empty / unset means follow shell.json.
     property string positionOverride: ""
@@ -330,8 +330,10 @@ Item {
     return merged
   }
 
-  Behavior on barForeground { enabled: root.foregroundAnimationEnabled; ColorAnimation { duration: 420; easing.type: Easing.InOutCubic } }
-  Behavior on background { ColorAnimation { duration: 420; easing.type: Easing.InOutCubic } }
+  // While the user is picking custom colours the bar should track the picker
+  // instantly; the slow cross-fade is for theme switches only.
+  Behavior on barForeground { enabled: root.foregroundAnimationEnabled && !root.customColors; ColorAnimation { duration: 420; easing.type: Easing.InOutCubic } }
+  Behavior on background { enabled: !root.customColors; ColorAnimation { duration: 420; easing.type: Easing.InOutCubic } }
   Behavior on urgent { ColorAnimation { duration: 420; easing.type: Easing.InOutCubic } }
   property var tooltipTarget: null
   property var pendingTooltipTarget: null
@@ -1362,9 +1364,9 @@ Item {
 
         Rectangle {
           anchors.fill: parent
-          color: Qt.alpha(Color.accent, 0.28)
+          color: Qt.alpha(root.accent, 0.28)
           border.width: 1
-          border.color: Qt.alpha(Color.accent, 0.65)
+          border.color: Qt.alpha(root.accent, 0.65)
           visible: opacity > 0.01
           opacity: root.triggerPreviewActive ? 1 : 0
           Behavior on opacity { NumberAnimation { duration: 200 } }
