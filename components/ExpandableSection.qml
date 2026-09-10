@@ -64,9 +64,10 @@ ColumnLayout {
         elide: Text.ElideRight
         Layout.maximumWidth: 240
       }
-      GlassButton {
+      IconButton {
         visible: root.resettable && root.expanded
-        text: "Reset"
+        icon: "↺"
+        tooltip: "Reset this section"
         onClicked: root.resetRequested()
       }
     }
