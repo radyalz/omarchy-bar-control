@@ -7,6 +7,7 @@ Item {
 
   visible: false
   property bool active: false
+  // Last object parsed off disk, kept current by the watcher's onLoaded.
   property var snapshot: ({})
   // Exact text of the last payload this surface wrote, so the watcher echo of
   // our own write is ignored instead of being suppressed on a time window.
@@ -21,22 +22,10 @@ Item {
     settingsFile.reload()
   }
 
-  function readDisk() {
-    // blockLoading makes reload() + text() synchronous.
-    settingsFile.reload()
-    try {
-      var raw = settingsFile.text()
-      if (String(raw || "").trim() !== "")
-        return JSON.parse(raw) || {}
-    } catch (error) { }
-    return JSON.parse(JSON.stringify(root.snapshot || {}))
-  }
-
   function update(patch) {
-    // Merge onto the current on-disk contents, never onto the cached snapshot:
-    // the popover may have been closed while the advanced panel or the bar
-    // changed settings, which would make snapshot stale and revert them.
-    var next = root.readDisk()
+    // Merge onto the in-memory snapshot, which watchChanges keeps in sync with
+    // the file. A synchronous reload() here would re-enter load() mid-write.
+    var next = JSON.parse(JSON.stringify(root.snapshot || ({})))
     next.version = 3
     for (var key in patch)
       next[key] = patch[key]
@@ -63,8 +52,6 @@ Item {
     path: root.settingsPath
     // Event-driven live sync with the bar and the advanced panel.
     watchChanges: true
-    // Synchronous reload() + text() for the read-modify-write in update().
-    blockLoading: true
     atomicWrites: true
     printErrors: false
     onLoaded: root.load(text())

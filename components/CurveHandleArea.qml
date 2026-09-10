@@ -13,6 +13,10 @@ MouseArea {
   signal curveEdited(real x1, real y1, real x2, real y2)
 
   hoverEnabled: true
+  // The editor sits inside the settings ScrollView. Without this, a vertical
+  // drag on a control point is taken over by the Flickable as a scroll and the
+  // point never moves (onCanceled fires instead).
+  preventStealing: true
 
   function normalizedX(mouseX) {
     return CurvePlot.clamp(

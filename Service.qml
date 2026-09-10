@@ -77,16 +77,18 @@ Item {
   // Exact text of the last payload this surface wrote. Used to ignore the
   // watcher echo of our own write instead of the old time-window suppression.
   property string lastWrittenText: ""
+  // Last object parsed off disk. saveSettings() merges onto this in-memory
+  // copy rather than doing a synchronous reload(), which would re-enter
+  // loadSettings() and revert the change that is being saved.
+  property var diskData: ({})
 
   FileView {
     id: settingsFile
     path: root.settingsPath
     // Event-driven: react to writes from the bar popover or any other surface
-    // the moment they land, rather than polling the file on a timer.
+    // the moment they land, rather than polling the file on a timer. onLoaded
+    // keeps diskData current so writes never need a blocking reload.
     watchChanges: true
-    // Makes reload() + text() synchronous so saveSettings() can safely
-    // read-modify-write without racing an async load.
-    blockLoading: true
     atomicWrites: true
     printErrors: false
     onLoaded: root.loadSettings(text())
@@ -212,6 +214,7 @@ Item {
 
     root.hydrating = false
     root.settingsLoaded = true
+    root.diskData = (data && typeof data === "object") ? data : ({})
     if (firstLoad && !data)
       root.scheduleSave()
   }
@@ -223,20 +226,11 @@ Item {
   }
 
   function saveSettings() {
-    // Read-modify-write. Re-read the file first (blockLoading makes this
-    // synchronous) and merge our known fields onto whatever is on disk right
-    // now, so a concurrent write from the bar popover or another surface keeps
-    // any keys this surface does not own instead of being clobbered wholesale.
-    settingsFile.reload()
-
-    var current = {}
-    try {
-      var raw = settingsFile.text()
-      if (String(raw || "").trim() !== "")
-        current = JSON.parse(raw) || {}
-    } catch (error) {
-      current = {}
-    }
+    // Read-modify-write against the in-memory copy of the file. diskData is
+    // kept current by the watcher's onLoaded, so merging onto it preserves any
+    // keys another surface owns without a synchronous reload() here -- a
+    // reload() would re-enter loadSettings() and revert the change being saved.
+    var current = JSON.parse(JSON.stringify(root.diskData || ({})))
 
     var known = {
       version: 3,
@@ -271,6 +265,7 @@ Item {
     var serialized = JSON.stringify(current, null, 2) + "\n"
     if (serialized === root.lastWrittenText)
       return
+    root.diskData = current
     root.lastWrittenText = serialized
     settingsFile.setText(serialized)
   }

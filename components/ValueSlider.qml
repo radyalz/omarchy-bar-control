@@ -32,8 +32,20 @@ ColumnLayout {
   QQC.Slider {
     id: slider
     Layout.fillWidth: true
-    from: root.from; to: root.to; stepSize: root.stepSize; value: root.value
+    from: root.from; to: root.to; stepSize: root.stepSize
     enabled: root.enabled; onMoved: root.edited(value)
+
+    // Track root.value while the user is not dragging. A plain
+    // `value: root.value` binding is destroyed the first time the handle is
+    // moved, after which resets, presets and external edits stop moving it.
+    Binding {
+      target: slider
+      property: "value"
+      value: root.value
+      when: !slider.pressed
+      restoreMode: Binding.RestoreBinding
+    }
+
     background: Rectangle {
       x: slider.leftPadding; y: slider.topPadding + slider.availableHeight / 2 - height / 2
       width: slider.availableWidth; height: 5; radius: 3; color: Qt.rgba(1, 1, 1, 0.09)
