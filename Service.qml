@@ -52,6 +52,12 @@ Item {
   property int islandRadius: 12
   property real islandOpacity: 1.0
 
+  // --- Bar size ----------------------------------------------------------
+  // Off by default so the theme's bar thickness and icon sizing are kept.
+  property bool barSizeOverrideEnabled: false
+  property int barThickness: 32
+  property int iconScale: 100
+
   // --- Project/support metadata -------------------------------------------
   property string repositoryUrl:
     "https://github.com/radyalz/omarchy-bar-control"
@@ -210,6 +216,13 @@ Item {
         root.clampInt(data.islandRadius, 0, 64, root.islandRadius)
       root.islandOpacity =
         root.clampReal(data.islandOpacity, 0.05, 1, root.islandOpacity)
+
+      if (typeof data.barSizeOverrideEnabled === "boolean")
+        root.barSizeOverrideEnabled = data.barSizeOverrideEnabled
+      root.barThickness =
+        root.clampInt(data.barThickness, 18, 96, root.barThickness)
+      root.iconScale =
+        root.clampInt(data.iconScale, 60, 180, root.iconScale)
     }
 
     root.hydrating = false
@@ -257,7 +270,10 @@ Item {
       islandGap: root.islandGap,
       islandInset: root.islandInset,
       islandRadius: root.islandRadius,
-      islandOpacity: root.islandOpacity
+      islandOpacity: root.islandOpacity,
+      barSizeOverrideEnabled: root.barSizeOverrideEnabled,
+      barThickness: root.barThickness,
+      iconScale: root.iconScale
     }
     for (var key in known)
       current[key] = known[key]
@@ -376,6 +392,12 @@ Item {
     root.islandOpacity = 1.0
   }
 
+  function resetBarSizeDefaults() {
+    root.barSizeOverrideEnabled = false
+    root.barThickness = 32
+    root.iconScale = 100
+  }
+
   function refreshIssueStatus() {
     if (!root.statusUrl) {
       root.githubStatus = "Not configured"
@@ -463,5 +485,8 @@ Item {
   onIslandInsetChanged: root.scheduleSave()
   onIslandRadiusChanged: root.scheduleSave()
   onIslandOpacityChanged: root.scheduleSave()
+  onBarSizeOverrideEnabledChanged: root.scheduleSave()
+  onBarThicknessChanged: root.scheduleSave()
+  onIconScaleChanged: root.scheduleSave()
 
 }
