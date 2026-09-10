@@ -52,6 +52,7 @@ RowLayout {
   }
 
   Rectangle {
+    id: swatch
     Layout.alignment: Qt.AlignVCenter
     implicitWidth: 22
     implicitHeight: 22
@@ -59,7 +60,22 @@ RowLayout {
     opacity: root.enabled ? 1 : 0.4
     color: root.valid(root.value) ? root.value : "transparent"
     border.width: 1
-    border.color: Qt.alpha(Color.foreground, 0.2)
+    border.color: picker.opened ? Color.accent : Qt.alpha(Color.foreground, 0.2)
+
+    MouseArea {
+      anchors.fill: parent
+      enabled: root.enabled
+      cursorShape: Qt.PointingHandCursor
+      onClicked: picker.opened ? picker.close() : picker.open()
+    }
+
+    ColorPicker {
+      id: picker
+      x: 0
+      y: swatch.height + 6
+      value: root.value
+      onPicked: function(hex) { root.edited(hex) }
+    }
   }
 
   Rectangle {
