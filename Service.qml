@@ -52,7 +52,8 @@ Item {
   property int islandEdgeMargin: 8
   property int islandPadding: 8
   property int islandGap: 4
-  property int islandInset: 2
+  property int islandInsetTop: 2
+  property int islandInsetBottom: 2
   property int islandRadius: 12
   property real islandOpacity: 1.0
 
@@ -232,8 +233,10 @@ Item {
         root.clampInt(data.islandPadding, 0, 64, root.islandPadding)
       root.islandGap =
         root.clampInt(data.islandGap, 0, 64, root.islandGap)
-      root.islandInset =
-        root.clampInt(data.islandInset, 0, 20, root.islandInset)
+      root.islandInsetTop =
+        root.clampInt(data.islandInsetTop, 0, 40, root.islandInsetTop)
+      root.islandInsetBottom =
+        root.clampInt(data.islandInsetBottom, 0, 40, root.islandInsetBottom)
       root.islandRadius =
         root.clampInt(data.islandRadius, 0, 64, root.islandRadius)
       root.islandOpacity =
@@ -298,7 +301,8 @@ Item {
       islandEdgeMargin: root.islandEdgeMargin,
       islandPadding: root.islandPadding,
       islandGap: root.islandGap,
-      islandInset: root.islandInset,
+      islandInsetTop: root.islandInsetTop,
+      islandInsetBottom: root.islandInsetBottom,
       islandRadius: root.islandRadius,
       islandOpacity: root.islandOpacity,
       barSizeOverrideEnabled: root.barSizeOverrideEnabled,
@@ -385,7 +389,8 @@ Item {
     root.islandEdgeMargin = 8
     root.islandPadding = 8
     root.islandGap = 4
-    root.islandInset = 2
+    root.islandInsetTop = 2
+    root.islandInsetBottom = 2
     root.islandRadius = 12
     root.islandOpacity = 1.0
     root.glassEnabled = false
@@ -423,7 +428,8 @@ Item {
     root.islandEdgeMargin = 8
     root.islandPadding = 8
     root.islandGap = 4
-    root.islandInset = 2
+    root.islandInsetTop = 2
+    root.islandInsetBottom = 2
     root.islandRadius = 12
     root.islandOpacity = 1.0
   }

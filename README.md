@@ -52,9 +52,10 @@ above will be broken links.)*
   theme.
 - **Bar size** — override bar thickness and an icon scale (best effort, since
   some Omarchy widgets size their own icons).
-- **Glass islands** — a light sheen and edge highlight over each island.
-  Looks best paired with a transparent bar and compositor blur (Hyprland's own
-  blur, or the omablur plugin) behind it.
+- **Glass islands** — a light sheen and edge highlight over each island, and
+  asks Hyprland to blur behind this bar specifically. Needs the compositor's
+  own blur switched on overall (e.g. via the omablur plugin) — this only opts
+  the bar into it. Pairs well with a transparent bar.
 - **Colours** — follow the active Omarchy theme, or switch to Custom and edit
   the bar background, island background, foreground/text and accent with an HSV
   picker (hue, saturation/value, opacity, hex). Custom starts seeded from the
@@ -167,9 +168,12 @@ with a read-modify-write merge.
   touch a setting again. Shell-wide text scaling is deliberately not done from
   here — mutating the shell's base font size crashed Quickshell 0.3.1 during
   plugin load, so icon scale now also covers the bar's own icon-label text.
-- **Glass islands is a visual sheen, not real blur.** Actual blur-behind comes
-  from the compositor (Hyprland's own blur, or the omablur plugin); this
-  plugin has no way to reach into that from a Quickshell overlay.
+- **Glass islands asks Hyprland for real blur, but can't force it.** It runs
+  `hyprctl eval` to add a layer rule scoping compositor blur to this bar's own
+  surface (verified against Hyprland 0.56's Lua config schema); it never
+  touches the global blur switch. If the compositor's own blur is off
+  entirely (e.g. via the omablur plugin), or on a non-Hyprland/older Hyprland
+  setup, the bar falls back to just the sheen overlay.
 - Custom colours cover the bar surface, islands, foreground and accent; a few
   accent uses elsewhere in the shell won't follow.
 - The update check reads the GitHub releases API (unauthenticated, IP

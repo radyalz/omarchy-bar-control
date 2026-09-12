@@ -54,7 +54,8 @@ Item {
     property int islandEdgeMargin: 8
     property int islandPadding: 8
     property int islandGap: 4
-    property int islandInset: 2
+    property int islandInsetTop: 2
+    property int islandInsetBottom: 2
     property int islandRadius: 12
     property real islandOpacity: 1.0
 
@@ -158,8 +159,10 @@ Item {
       autohideSettings.islandPadding = Math.max(0, Math.min(64, Math.round(Number(data.islandPadding))))
     if (isFinite(Number(data.islandGap)))
       autohideSettings.islandGap = Math.max(0, Math.min(64, Math.round(Number(data.islandGap))))
-    if (isFinite(Number(data.islandInset)))
-      autohideSettings.islandInset = Math.max(0, Math.min(20, Math.round(Number(data.islandInset))))
+    if (isFinite(Number(data.islandInsetTop)))
+      autohideSettings.islandInsetTop = Math.max(0, Math.min(40, Math.round(Number(data.islandInsetTop))))
+    if (isFinite(Number(data.islandInsetBottom)))
+      autohideSettings.islandInsetBottom = Math.max(0, Math.min(40, Math.round(Number(data.islandInsetBottom))))
     if (isFinite(Number(data.islandRadius)))
       autohideSettings.islandRadius = Math.max(0, Math.min(64, Math.round(Number(data.islandRadius))))
     if (isFinite(Number(data.islandOpacity)))
@@ -193,6 +196,7 @@ Item {
 
     applyBarConfig()
     applyScales()
+    applyGlassLayerRule()
     if (!autohideSettings.enabled)
       root.barHidden = false
   }
@@ -230,6 +234,54 @@ Item {
       Style.barOverrides = next
     } catch (error) {
       console.warn("radyalz-bar-control: applyScales failed:", error)
+    }
+  }
+
+  // Glass islands: opt this bar's own layer-shell surface into Hyprland's
+  // compositor blur, so it actually looks like frosted glass instead of just
+  // the sheen overlay. Layer-shell surfaces (bars, panels) are NOT blurred by
+  // Hyprland's global decoration:blur:enabled alone -- that needs an explicit
+  // layer rule naming this bar's namespace ("omarchy-bar", confirmed live via
+  // `hyprctl layers`). We only ever add/retract that one scoped rule; we
+  // never touch the global blur switch or its size/passes, since that is
+  // shared, global compositor state other tools (the omablur plugin, the
+  // user's own Hyprland config) already own.
+  //
+  // Omarchy's Hyprland config is authored in Lua (~/.config/hypr/*.lua), so
+  // `hyprctl keyword` (the classic line-based apply) does not reliably take
+  // effect -- live changes go through `hyprctl eval` running a Lua snippet.
+  // The layer-rule function and its shape (hl.layer_rule({ match = {
+  // namespace = ... }, blur = ..., ignore_alpha = ... })) were confirmed
+  // against this exact setup: it matches the user's own existing rule for
+  // this same namespace in ~/.config/hypr/looknfeel.lua, and a deliberately
+  // wrong field name is rejected by hyprctl with a schema error, while this
+  // shape returns "ok". This is still best effort: it only spawns an
+  // external process, so on a different compositor or a Hyprland version
+  // with a different Lua schema it just silently does nothing -- it cannot
+  // crash the shell.
+  // undefined (not a bool) means "never applied yet", so the first call
+  // always syncs even if glassEnabled happens to already be false.
+  property var glassLayerRuleAppliedFor: undefined
+  property bool glassLayerRuleQueued: false
+  function applyGlassLayerRule() {
+    if (!root.scalesArmed) return
+    if (root.glassLayerRuleAppliedFor === autohideSettings.glassEnabled) return
+    if (glassLayerRuleProc.running) { root.glassLayerRuleQueued = true; return }
+    root.glassLayerRuleQueued = false
+    root.glassLayerRuleAppliedFor = autohideSettings.glassEnabled
+    var rule = autohideSettings.glassEnabled
+      ? 'hl.layer_rule({ match = { namespace = "omarchy-bar" }, blur = true, ignore_alpha = 0.1 })'
+      : 'hl.layer_rule({ match = { namespace = "omarchy-bar" }, blur = false })'
+    glassLayerRuleProc.command = ["hyprctl", "eval", rule]
+    glassLayerRuleProc.running = true
+  }
+
+  Process {
+    id: glassLayerRuleProc
+    onExited: function(exitCode) {
+      if (exitCode !== 0)
+        console.warn("radyalz-bar-control: hyprctl eval for the glass layer rule exited " + exitCode)
+      if (root.glassLayerRuleQueued) root.applyGlassLayerRule()
     }
   }
 
@@ -301,9 +353,16 @@ Item {
     ? root.autohideService.islandEdgeMargin : Style.space(8)
   readonly property int islandPadX: customIslandAppearance
     ? root.autohideService.islandPadding : Style.space(8)
-  readonly property int islandInset: customIslandAppearance
-    ? root.autohideService.islandInset : Style.space(2)
-  readonly property int islandThickness: Math.max(1, root.barSize - islandInset * 2)
+  readonly property int islandInsetTop: customIslandAppearance
+    ? root.autohideService.islandInsetTop : Style.space(2)
+  readonly property int islandInsetBottom: customIslandAppearance
+    ? root.autohideService.islandInsetBottom : Style.space(2)
+  readonly property int islandThickness: Math.max(1, root.barSize - islandInsetTop - islandInsetBottom)
+  // On a horizontal bar, an uneven top/bottom inset shifts the island off the
+  // slot's centre rather than shrinking it symmetrically. Unused (0) on a
+  // vertical bar, where the two settings still average into islandThickness.
+  readonly property real islandVerticalCenterOffset:
+    root.vertical ? 0 : (islandInsetTop - islandInsetBottom) / 2
   readonly property int islandRadius: customIslandAppearance
     ? root.autohideService.islandRadius : Style.cornerRadius
   readonly property int islandGap: customIslandAppearance
@@ -875,6 +934,7 @@ Item {
     onTriggered: {
       root.scalesArmed = true
       root.applyScales()
+      root.applyGlassLayerRule()
     }
   }
 
@@ -2241,6 +2301,7 @@ Item {
       z: -1
       visible: slot.implicitWidth > 0 && slot.implicitHeight > 0 && !root.drawsOwnIslands(slot.moduleName)
       anchors.centerIn: parent
+      anchors.verticalCenterOffset: root.islandVerticalCenterOffset
       width: root.vertical ? root.islandThickness : parent.width + root.islandPadX * 2
       height: root.vertical ? parent.height + root.islandPadX * 2 : root.islandThickness
       color: root.islandBackground
@@ -2249,17 +2310,18 @@ Item {
     }
 
     // Glass look: a light sheen + hairline edge painted over the island
-    // background above. This is a compositing trick (gradient + border), not
-    // real backdrop blur -- Quickshell has no public API for blurring what is
-    // behind a layer-shell surface, so real blur behind the bar still comes
-    // from the compositor (e.g. Hyprland's own blur / the omablur plugin).
-    // With that already in place, the translucency here reads as frosted
-    // glass; without it, it still reads as a subtle glossy card.
+    // background above (a QML compositing trick -- gradient + border).
+    // Actual backdrop blur is asked for separately, from applyGlassLayerRule()
+    // below, via a Hyprland layer rule -- Quickshell itself has no public API
+    // for blurring what is behind a layer-shell surface. That still needs the
+    // user's own compositor blur switched on overall (e.g. via the omablur
+    // plugin); this only opts this bar's layer into it.
     Rectangle {
       z: -1
       visible: root.glassEnabled
         && slot.implicitWidth > 0 && slot.implicitHeight > 0 && !root.drawsOwnIslands(slot.moduleName)
       anchors.centerIn: parent
+      anchors.verticalCenterOffset: root.islandVerticalCenterOffset
       width: root.vertical ? root.islandThickness : parent.width + root.islandPadX * 2
       height: root.vertical ? parent.height + root.islandPadX * 2 : root.islandThickness
       radius: root.islandRadius

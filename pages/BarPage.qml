@@ -41,7 +41,7 @@ SettingsPage {
         }
         ToggleRow {
           label: "Glass islands"
-          description: "Adds a light sheen and edge highlight over each island. Looks best combined with a transparent bar and compositor blur (e.g. Hyprland's own blur, or the omablur plugin) behind it."
+          description: "A sheen + edge highlight over each island, and asks Hyprland to blur behind this bar specifically. Needs your compositor's own blur switched on overall (e.g. via the omablur plugin) — this only opts the bar into it. Pairs well with a transparent bar."
           checked: root.service ? root.service.glassEnabled : false
           enabled: root.service !== null
           onToggled: function(value) { if (root.service) root.service.glassEnabled = value }
