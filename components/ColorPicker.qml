@@ -15,7 +15,7 @@ QQC.Popup {
   focus: true
   closePolicy: QQC.Popup.CloseOnEscape | QQC.Popup.CloseOnPressOutside
   implicitWidth: 228
-  implicitHeight: 274
+  implicitHeight: 298
 
   enter: Transition { NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 110 } }
   exit: Transition { NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 90 } }
@@ -139,6 +139,16 @@ QQC.Popup {
     }
 
     // Alpha
+    RowLayout {
+      Layout.fillWidth: true
+      Text { text: "Opacity"; color: Qt.alpha(Color.foreground, 0.7); font.pixelSize: 10 }
+      Item { Layout.fillWidth: true }
+      Text {
+        text: Math.round(root.alpha * 100) + "%"
+        color: Color.foreground
+        font.pixelSize: 10
+      }
+    }
     Rectangle {
       Layout.fillWidth: true
       implicitHeight: 14
