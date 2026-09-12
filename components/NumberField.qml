@@ -39,12 +39,24 @@ Rectangle {
       input.text = root.formatted(root.value)
       return
     }
+    root.applyValue(n)
+  }
+
+  // Shared by commit() and the arrow-key step below: clamp to [from, to],
+  // snap to stepSize, format, then emit.
+  function applyValue(n) {
     n = Math.max(root.from, Math.min(root.to, n))
     if (root.stepSize > 0)
       n = Math.round(n / root.stepSize) * root.stepSize
     n = Number(n.toFixed(root.decimals))
     input.text = root.formatted(n)
     root.edited(n)
+  }
+
+  function step(direction) {
+    var current = Number(input.text)
+    if (!isFinite(current)) current = root.value
+    root.applyValue(current + direction * (root.stepSize > 0 ? root.stepSize : 1))
   }
 
   onValueChanged: root.syncText()
@@ -71,6 +83,8 @@ Rectangle {
       onEditingFinished: root.commit()
       Keys.onReturnPressed: root.commit()
       Keys.onEnterPressed: root.commit()
+      Keys.onUpPressed: root.step(1)
+      Keys.onDownPressed: root.step(-1)
     }
 
     Text {
