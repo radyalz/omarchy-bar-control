@@ -15,6 +15,10 @@ Item {
   // Service.qml therefore owns settings only; Bar.qml owns autohide runtime.
   property string position: bar ? String(bar.position || "top") : "top"
   property bool transparent: false
+  // Glass look: a light sheen + hairline edge drawn over the islands (the
+  // bar's only visible surface). Independent of the override groups below so
+  // it works with theme-default geometry too.
+  property bool glassEnabled: false
 
   // --- Autohide activation -------------------------------------------------
   // This is the master module switch exposed in the GUI. Disabling it keeps
@@ -57,7 +61,6 @@ Item {
   property bool barSizeOverrideEnabled: false
   property int barThickness: 32
   property int iconScale: 100
-  property int fontScale: 100
 
   // --- Colors ----------------------------------------------------------
   // Off by default so the bar tracks the active Omarchy theme.
@@ -179,6 +182,8 @@ Item {
 
       if (typeof data.transparent === "boolean")
         root.transparent = data.transparent
+      if (typeof data.glassEnabled === "boolean")
+        root.glassEnabled = data.glassEnabled
 
       root.triggerThickness =
         root.clampInt(data.triggerThickness, 1, 50, root.triggerThickness)
@@ -240,8 +245,6 @@ Item {
         root.clampInt(data.barThickness, 18, 96, root.barThickness)
       root.iconScale =
         root.clampInt(data.iconScale, 60, 180, root.iconScale)
-      root.fontScale =
-        root.clampInt(data.fontScale, 60, 180, root.fontScale)
 
       if (typeof data.colorOverrideEnabled === "boolean")
         root.colorOverrideEnabled = data.colorOverrideEnabled
@@ -276,6 +279,7 @@ Item {
       enabled: root.enabled,
       position: root.position,
       transparent: root.transparent,
+      glassEnabled: root.glassEnabled,
       triggerThickness: root.triggerThickness,
       animationMode: root.animationMode,
       animationPreset: root.animationPreset,
@@ -300,7 +304,6 @@ Item {
       barSizeOverrideEnabled: root.barSizeOverrideEnabled,
       barThickness: root.barThickness,
       iconScale: root.iconScale,
-      fontScale: root.fontScale,
       colorOverrideEnabled: root.colorOverrideEnabled,
       barColor: root.barColor,
       islandColor: root.islandColor,
@@ -385,6 +388,7 @@ Item {
     root.islandInset = 2
     root.islandRadius = 12
     root.islandOpacity = 1.0
+    root.glassEnabled = false
   }
 
   // --- Per-section resets used by the collapsible settings groups ---------
@@ -428,7 +432,6 @@ Item {
     root.barSizeOverrideEnabled = false
     root.barThickness = 32
     root.iconScale = 100
-    root.fontScale = 100
   }
 
   function resetColorDefaults() {
@@ -589,6 +592,7 @@ Item {
   onEnabledChanged: root.scheduleSave()
   onPositionChanged: root.scheduleSave()
   onTransparentChanged: root.scheduleSave()
+  onGlassEnabledChanged: root.scheduleSave()
   onTriggerThicknessChanged: root.scheduleSave()
   onAnimationModeChanged: root.scheduleSave()
   onAnimationPresetChanged: root.scheduleSave()
@@ -613,7 +617,6 @@ Item {
   onBarSizeOverrideEnabledChanged: root.scheduleSave()
   onBarThicknessChanged: root.scheduleSave()
   onIconScaleChanged: root.scheduleSave()
-  onFontScaleChanged: root.scheduleSave()
   onColorOverrideEnabledChanged: root.scheduleSave()
   onBarColorChanged: root.scheduleSave()
   onIslandColorChanged: root.scheduleSave()

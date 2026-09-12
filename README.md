@@ -50,8 +50,11 @@ above will be broken links.)*
 - **Island appearance** — override the edge margin, padding, gap, inset, corner
   radius and opacity of the per-widget "islands", or leave it following the
   theme.
-- **Bar size** — override bar thickness, an icon scale, and a text scale
-  (best effort for icons/text, since some Omarchy widgets size their own).
+- **Bar size** — override bar thickness and an icon scale (best effort, since
+  some Omarchy widgets size their own icons).
+- **Glass islands** — a light sheen and edge highlight over each island.
+  Looks best paired with a transparent bar and compositor blur (Hyprland's own
+  blur, or the omablur plugin) behind it.
 - **Colours** — follow the active Omarchy theme, or switch to Custom and edit
   the bar background, island background, foreground/text and accent with an HSV
   picker (hue, saturation/value, opacity, hex). Custom starts seeded from the
@@ -158,11 +161,15 @@ with a read-modify-write merge.
 
 ## Known limitations
 
-- **Icon and text scale are best effort.** Omarchy's icon widgets read sizing
-  straight from the `Style` singleton; the plugin nudges those globally and
-  re-applies on the next settings change, so a bare theme switch clears it until
-  you touch a setting again. Text scale changes the shell's base font size, so
-  it affects more than just the bar.
+- **Icon scale is best effort.** Omarchy's icon widgets read sizing straight
+  from the `Style` singleton; the plugin nudges that globally and re-applies
+  on the next settings change, so a bare theme switch clears it until you
+  touch a setting again. Shell-wide text scaling is deliberately not done from
+  here — mutating the shell's base font size crashed Quickshell 0.3.1 during
+  plugin load, so icon scale now also covers the bar's own icon-label text.
+- **Glass islands is a visual sheen, not real blur.** Actual blur-behind comes
+  from the compositor (Hyprland's own blur, or the omablur plugin); this
+  plugin has no way to reach into that from a Quickshell overlay.
 - Custom colours cover the bar surface, islands, foreground and accent; a few
   accent uses elsewhere in the shell won't follow.
 - The update check reads the GitHub releases API (unauthenticated, IP

@@ -21,15 +21,31 @@ SettingsPage {
 
   ExpandableSection {
     title: "Surface"
-    summary: root.service && root.service.currentTransparent ? "Transparent" : "Solid"
+    summary: {
+      if (!root.service) return "Solid"
+      var parts = []
+      parts.push(root.service.currentTransparent ? "Transparent" : "Solid")
+      if (root.service.glassEnabled) parts.push("Glass")
+      return parts.join(" · ")
+    }
 
     Component {
-      ToggleRow {
-        label: "Transparent bar"
-        description: "Let the wallpaper show through the bar surface."
-        checked: root.service ? root.service.currentTransparent : false
-        enabled: root.service !== null
-        onToggled: function(value) { if (root.service) root.service.setTransparent(value) }
+      ColumnLayout {
+        spacing: 12
+        ToggleRow {
+          label: "Transparent bar"
+          description: "Let the wallpaper show through the bar surface."
+          checked: root.service ? root.service.currentTransparent : false
+          enabled: root.service !== null
+          onToggled: function(value) { if (root.service) root.service.setTransparent(value) }
+        }
+        ToggleRow {
+          label: "Glass islands"
+          description: "Adds a light sheen and edge highlight over each island. Looks best combined with a transparent bar and compositor blur (e.g. Hyprland's own blur, or the omablur plugin) behind it."
+          checked: root.service ? root.service.glassEnabled : false
+          enabled: root.service !== null
+          onToggled: function(value) { if (root.service) root.service.glassEnabled = value }
+        }
       }
     }
   }
@@ -60,8 +76,7 @@ SettingsPage {
   ExpandableSection {
     title: "Bar size"
     summary: root.service && root.service.barSizeOverrideEnabled
-      ? root.service.barThickness + " px · icons " + root.service.iconScale
-        + "% · text " + root.service.fontScale + "%"
+      ? root.service.barThickness + " px · icons " + root.service.iconScale + "%"
       : "Theme default"
     resettable: true
     onResetRequested: if (root.service) root.service.resetBarSizeDefaults()
@@ -71,7 +86,7 @@ SettingsPage {
         spacing: 12
         ToggleRow {
           label: "Custom bar size"
-          description: "Override the theme's bar thickness, icon scale and text scale."
+          description: "Override the theme's bar thickness and icon scale."
           checked: root.service ? root.service.barSizeOverrideEnabled : false
           enabled: root.service !== null
           onToggled: function(value) {
@@ -90,22 +105,12 @@ SettingsPage {
         }
         ValueSlider {
           label: "Icon scale"
-          description: "Scales bar widget icons. Best effort — some Omarchy widgets size their own icons and may not follow."
+          description: "Scales the bar's icon size and icon-label text together. Best effort — some Omarchy widgets size their own icons and may not follow."
           from: 60; to: 180; stepSize: 5; suffix: " %"
           value: root.service ? root.service.iconScale : 100
           enabled: root.service && root.service.barSizeOverrideEnabled
           onEdited: function(value) {
             if (root.service) root.service.iconScale = Math.round(value)
-          }
-        }
-        ValueSlider {
-          label: "Text scale"
-          description: "Nudges the bar's icon-label text size (on top of icon scale). Full shell-wide text scaling is intentionally not done from here — it can crash the shell."
-          from: 60; to: 180; stepSize: 5; suffix: " %"
-          value: root.service ? root.service.fontScale : 100
-          enabled: root.service && root.service.barSizeOverrideEnabled
-          onEdited: function(value) {
-            if (root.service) root.service.fontScale = Math.round(value)
           }
         }
       }

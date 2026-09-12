@@ -61,7 +61,8 @@ Item {
     property bool barSizeOverrideEnabled: false
     property int barThickness: 32
     property int iconScale: 100
-    property int fontScale: 100
+
+    property bool glassEnabled: false
 
     property bool colorOverrideEnabled: false
     property color barColor: "#1e1e2e"
@@ -170,8 +171,9 @@ Item {
       autohideSettings.barThickness = Math.max(18, Math.min(96, Math.round(Number(data.barThickness))))
     if (isFinite(Number(data.iconScale)))
       autohideSettings.iconScale = Math.max(60, Math.min(180, Math.round(Number(data.iconScale))))
-    if (isFinite(Number(data.fontScale)))
-      autohideSettings.fontScale = Math.max(60, Math.min(180, Math.round(Number(data.fontScale))))
+
+    if (typeof data.glassEnabled === "boolean")
+      autohideSettings.glassEnabled = data.glassEnabled
 
     if (typeof data.colorOverrideEnabled === "boolean")
       autohideSettings.colorOverrideEnabled = data.colorOverrideEnabled
@@ -195,11 +197,11 @@ Item {
       root.barHidden = false
   }
 
-  // Icon / text scale for the bar's own widgets, applied only through
-  // Style.barOverrides (icon tokens). We deliberately do NOT write
+  // Icon scale for the bar's own widgets, applied only through
+  // Style.barOverrides (icon tokens: slot, canvas and label font all scale
+  // together as one control). We deliberately do NOT write
   // Style.fontBaseSize: mutating it re-lays out the whole shell and Quickshell
-  // 0.3.1 can segfault doing that during a plugin load. So text scale here just
-  // nudges the bar's icon-font token alongside icon scale. All of this is
+  // 0.3.1 can segfault doing that during a plugin load. All of this is
   // opt-in (barSizeOverrideEnabled), armed only after the shell has settled,
   // and never writes an unchanged value.
   readonly property var iconTokenBase: ({ "icon-slot": 27, "icon-canvas": 16, "icon-font": 13 })
@@ -217,10 +219,9 @@ Item {
 
     if (autohideSettings.barSizeOverrideEnabled) {
       var iconScale = Math.max(0.6, Math.min(1.8, autohideSettings.iconScale / 100))
-      var fontScale = Math.max(0.6, Math.min(1.8, autohideSettings.fontScale / 100))
       next["icon-slot"] = Math.round(root.iconTokenBase["icon-slot"] * iconScale)
       next["icon-canvas"] = Math.round(root.iconTokenBase["icon-canvas"] * iconScale)
-      next["icon-font"] = Math.round(root.iconTokenBase["icon-font"] * iconScale * fontScale)
+      next["icon-font"] = Math.round(root.iconTokenBase["icon-font"] * iconScale)
     }
 
     if (JSON.stringify(next) === JSON.stringify(existing))
@@ -277,6 +278,7 @@ Item {
   // Bound to the central Color singleton so the bar tracks shell.toml's
   // [bar] section. Property names kept for the rest of this file's bindings.
   readonly property bool customColors: autohideSettings.colorOverrideEnabled
+  readonly property bool glassEnabled: autohideSettings.glassEnabled
   property color themeForeground: customColors ? autohideSettings.textColor : Color.bar.text
   property color themeContrastForeground: Color.background
   property color transparentForeground: customColors ? autohideSettings.textColor : Color.bar.text
@@ -2244,6 +2246,31 @@ Item {
       color: root.islandBackground
       radius: root.islandRadius
       opacity: root.islandOpacity
+    }
+
+    // Glass look: a light sheen + hairline edge painted over the island
+    // background above. This is a compositing trick (gradient + border), not
+    // real backdrop blur -- Quickshell has no public API for blurring what is
+    // behind a layer-shell surface, so real blur behind the bar still comes
+    // from the compositor (e.g. Hyprland's own blur / the omablur plugin).
+    // With that already in place, the translucency here reads as frosted
+    // glass; without it, it still reads as a subtle glossy card.
+    Rectangle {
+      z: -1
+      visible: root.glassEnabled
+        && slot.implicitWidth > 0 && slot.implicitHeight > 0 && !root.drawsOwnIslands(slot.moduleName)
+      anchors.centerIn: parent
+      width: root.vertical ? root.islandThickness : parent.width + root.islandPadX * 2
+      height: root.vertical ? parent.height + root.islandPadX * 2 : root.islandThickness
+      radius: root.islandRadius
+      opacity: root.islandOpacity
+      border.width: 1
+      border.color: Qt.rgba(1, 1, 1, 0.22)
+      gradient: Gradient {
+        GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.16) }
+        GradientStop { position: 0.5; color: Qt.rgba(1, 1, 1, 0.04) }
+        GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.06) }
+      }
     }
 
     BorderSurface {
