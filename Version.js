@@ -5,7 +5,7 @@
 // here and both panels follow. Keep it in step with the version field in
 // manifest.json.
 var name = "Radyalz Bar Control"
-var number = "0.4.8"
+var number = "0.4.9"
 var full = "v" + number
 var author = "Radman Alizadeh (Radyalz)"
 var license = "MIT"

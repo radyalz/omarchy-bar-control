@@ -1,4 +1,4 @@
-Radyalz Bar Control v0.4.8
+Radyalz Bar Control v0.4.9
 
 INSTALL
 -------
