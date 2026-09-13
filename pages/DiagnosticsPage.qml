@@ -10,12 +10,17 @@ SettingsPage {
 
   PageTitle {
     title: "Diagnostics"
-    description: "Local plugin health and the optional GitHub project-status feed."
+    description: "Checks that the bar, its settings and autohide are all working. Look for updates on the Updates page."
   }
   PluginHealthCard { service: root.service }
-  SectionLabel { label: "GitHub project status" }
-  ProjectStatusCard { service: root.service }
-  SectionLabel { label: "Diagnostic report" }
+  SectionLabel { label: "Full report" }
+  Text {
+    Layout.fillWidth: true
+    text: "Copy this and paste it into a GitHub issue if you're reporting a problem — it has your versions and current settings, nothing personal."
+    color: Qt.alpha(Color.foreground, 0.6)
+    font.pixelSize: 11
+    wrapMode: Text.WordWrap
+  }
   QQC.TextArea {
     Layout.fillWidth: true
     // Grow with the window instead of sitting in a fixed short box.
