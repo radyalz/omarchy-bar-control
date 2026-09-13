@@ -1690,23 +1690,23 @@ Item {
     // textures — which measures ~150ms against ~20ms to tear down. Parking
     // keeps the surface alive, so showing is only a margin change.
     visible: !remapGuard.remapping
-    exclusionMode: barWindow.autohideParked
-      ? ExclusionMode.Ignore
-      : ExclusionMode.Auto
 
     ScreenMoveRemap {
       id: remapGuard
       window: barWindow
     }
 
-    // A horizontal bar is only anchored to one edge (top or bottom), so
-    // "space above"/"space below" push it away from the screen edge via
-    // margins on that edge, but the OPPOSITE edge has nothing to push
-    // against -- that gap instead grows the window past barSize and leaves
-    // the extra strip empty/transparent, reserved but unpainted. A vertical
-    // bar is anchored top AND bottom already, so both margins directly
-    // shorten it -- no extra space needed.
-    readonly property int reservedExtent: root.vertical
+    // "Space above"/"space below" push the bar away from the screen edge via
+    // a margin on its own anchored edge. The OPPOSITE edge of a horizontal
+    // bar isn't anchored, so a margin there has nothing to push against;
+    // reserving that gap for OTHER windows (without making our own surface
+    // any bigger -- a bigger surface would mean a bigger blurred/glass
+    // rectangle, an ugly empty box) is exactly what WlrLayershell's
+    // exclusiveZone is for: it can reserve more screen space than the
+    // surface's own pixel size, independent of margins. A vertical bar is
+    // anchored top AND bottom already, so both margins directly shorten it
+    // and the normal Auto exclusion (from its own size) is still correct.
+    readonly property int reservedZone: root.vertical
       ? root.barSize
       : root.barSize + (
           root.position === "top" ? root.barMarginBottom
@@ -1715,16 +1715,8 @@ Item {
         )
 
     margins {
-      top: root.vertical
-        ? root.barMarginTop
-        : (root.position === "top"
-            ? (barWindow.autohideParked ? -barWindow.reservedExtent : root.barMarginTop)
-            : 0)
-      bottom: root.vertical
-        ? root.barMarginBottom
-        : (root.position === "bottom"
-            ? (barWindow.autohideParked ? -barWindow.reservedExtent : root.barMarginBottom)
-            : 0)
+      top: barWindow.autohideParked && root.position === "top" ? -root.barSize : (root.vertical ? root.barMarginTop : (root.position === "top" ? root.barMarginTop : 0))
+      bottom: barWindow.autohideParked && root.position === "bottom" ? -root.barSize : (root.vertical ? root.barMarginBottom : (root.position === "bottom" ? root.barMarginBottom : 0))
       left: barWindow.autohideParked && root.position === "left" ? -root.barSize : 0
       right: barWindow.autohideParked && root.position === "right" ? -root.barSize : 0
     }
@@ -1737,7 +1729,11 @@ Item {
     }
 
     implicitWidth: root.vertical ? root.barSize : 0
-    implicitHeight: root.vertical ? 0 : barWindow.reservedExtent
+    implicitHeight: root.vertical ? 0 : root.barSize
+    exclusionMode: barWindow.autohideParked
+      ? ExclusionMode.Ignore
+      : (root.vertical ? ExclusionMode.Auto : ExclusionMode.Normal)
+    WlrLayershell.exclusiveZone: barWindow.reservedZone
     // Islands paint their own backgrounds; the window itself stays clear.
     color: "transparent"
     surfaceFormat.opaque: false
@@ -1746,15 +1742,7 @@ Item {
 
     Loader {
       id: barContent
-      anchors.left: parent.left
-      anchors.right: parent.right
-      // Pinned to whichever edge is anchored, so it sits flush against the
-      // real bar position and leaves any extra reservedExtent space (the
-      // "space below" gap on a top bar, or "space above" on a bottom one)
-      // empty on the far side instead of stretching into it.
-      anchors.top: root.vertical || root.position === "top" ? parent.top : undefined
-      anchors.bottom: root.vertical || root.position === "bottom" ? parent.bottom : undefined
-      height: root.vertical ? undefined : root.barSize
+      anchors.fill: parent
       sourceComponent: root.vertical ? verticalBar : horizontalBar
       opacity: 1
 
