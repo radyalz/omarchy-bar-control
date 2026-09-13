@@ -41,21 +41,12 @@ ColumnLayout {
   }
 
   ValueSlider {
-    label: "Space above"
-    description: "How far each island is pulled in from the top of the bar (left of the bar, on a left/right bar)."
-    from: 0; to: 40; stepSize: 1; suffix: " px"
-    value: root.service ? root.service.islandInsetTop : 2
+    label: "Inset"
+    description: "How far each island is pulled in from the bar's full thickness."
+    from: 0; to: 20; stepSize: 1; suffix: " px"
+    value: root.service ? root.service.islandInset : 2
     enabled: root.editable
-    onEdited: function(value) { root.setInteger("islandInsetTop", value) }
-  }
-
-  ValueSlider {
-    label: "Space below"
-    description: "How far each island is pulled in from the bottom of the bar (right of the bar, on a left/right bar)."
-    from: 0; to: 40; stepSize: 1; suffix: " px"
-    value: root.service ? root.service.islandInsetBottom : 2
-    enabled: root.editable
-    onEdited: function(value) { root.setInteger("islandInsetBottom", value) }
+    onEdited: function(value) { root.setInteger("islandInset", value) }
   }
 
   ValueSlider {

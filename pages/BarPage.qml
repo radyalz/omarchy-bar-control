@@ -46,6 +46,15 @@ SettingsPage {
           enabled: root.service !== null
           onToggled: function(value) { if (root.service) root.service.glassEnabled = value }
         }
+        ValueSlider {
+          label: "Blur strength"
+          description: "Compositor blur intensity (Hyprland's global decoration:blur:size/passes — the same setting the omablur plugin's own blur slider controls, shared with the rest of the desktop, not just this bar)."
+          from: 0; to: 100; stepSize: 5; suffix: " %"
+          value: root.service ? root.service.glassBlurStrength : 50
+          enabled: root.service && root.service.glassEnabled
+          visible: root.service && root.service.glassEnabled
+          onEdited: function(value) { if (root.service) root.service.glassBlurStrength = Math.round(value) }
+        }
       }
     }
   }

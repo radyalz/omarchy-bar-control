@@ -15,10 +15,21 @@ Item {
   // Service.qml therefore owns settings only; Bar.qml owns autohide runtime.
   property string position: bar ? String(bar.position || "top") : "top"
   property bool transparent: false
+  // Gap between the screen edge and the bar itself -- floats the whole bar
+  // surface rather than adjusting anything inside it. barMarginTop is the
+  // gap before a "top" bar (or above a left/right bar); barMarginBottom is
+  // the gap after a "bottom" bar (or below a left/right bar). Each has no
+  // effect on the opposite bar position, since that edge isn't anchored.
+  property int barMarginTop: 0
+  property int barMarginBottom: 0
   // Glass look: a light sheen + hairline edge drawn over the islands (the
   // bar's only visible surface). Independent of the override groups below so
   // it works with theme-default geometry too.
   property bool glassEnabled: false
+  // 0-100%, mirrors omablur's own blur-percent scale so the two plugins feel
+  // consistent. Only ever applied while glassEnabled is true; see
+  // applyGlassBlurStrength() for how it reaches Hyprland's global blur.
+  property int glassBlurStrength: 50
 
   // --- Autohide activation -------------------------------------------------
   // This is the master module switch exposed in the GUI. Disabling it keeps
@@ -52,8 +63,7 @@ Item {
   property int islandEdgeMargin: 8
   property int islandPadding: 8
   property int islandGap: 4
-  property int islandInsetTop: 2
-  property int islandInsetBottom: 2
+  property int islandInset: 2
   property int islandRadius: 12
   property real islandOpacity: 1.0
 
@@ -183,8 +193,12 @@ Item {
 
       if (typeof data.transparent === "boolean")
         root.transparent = data.transparent
+      root.barMarginTop = root.clampInt(data.barMarginTop, 0, 200, root.barMarginTop)
+      root.barMarginBottom = root.clampInt(data.barMarginBottom, 0, 200, root.barMarginBottom)
       if (typeof data.glassEnabled === "boolean")
         root.glassEnabled = data.glassEnabled
+      root.glassBlurStrength =
+        root.clampInt(data.glassBlurStrength, 0, 100, root.glassBlurStrength)
 
       root.triggerThickness =
         root.clampInt(data.triggerThickness, 1, 50, root.triggerThickness)
@@ -233,10 +247,8 @@ Item {
         root.clampInt(data.islandPadding, 0, 64, root.islandPadding)
       root.islandGap =
         root.clampInt(data.islandGap, 0, 64, root.islandGap)
-      root.islandInsetTop =
-        root.clampInt(data.islandInsetTop, 0, 40, root.islandInsetTop)
-      root.islandInsetBottom =
-        root.clampInt(data.islandInsetBottom, 0, 40, root.islandInsetBottom)
+      root.islandInset =
+        root.clampInt(data.islandInset, 0, 20, root.islandInset)
       root.islandRadius =
         root.clampInt(data.islandRadius, 0, 64, root.islandRadius)
       root.islandOpacity =
@@ -282,7 +294,10 @@ Item {
       enabled: root.enabled,
       position: root.position,
       transparent: root.transparent,
+      barMarginTop: root.barMarginTop,
+      barMarginBottom: root.barMarginBottom,
       glassEnabled: root.glassEnabled,
+      glassBlurStrength: root.glassBlurStrength,
       triggerThickness: root.triggerThickness,
       animationMode: root.animationMode,
       animationPreset: root.animationPreset,
@@ -301,8 +316,7 @@ Item {
       islandEdgeMargin: root.islandEdgeMargin,
       islandPadding: root.islandPadding,
       islandGap: root.islandGap,
-      islandInsetTop: root.islandInsetTop,
-      islandInsetBottom: root.islandInsetBottom,
+      islandInset: root.islandInset,
       islandRadius: root.islandRadius,
       islandOpacity: root.islandOpacity,
       barSizeOverrideEnabled: root.barSizeOverrideEnabled,
@@ -389,8 +403,7 @@ Item {
     root.islandEdgeMargin = 8
     root.islandPadding = 8
     root.islandGap = 4
-    root.islandInsetTop = 2
-    root.islandInsetBottom = 2
+    root.islandInset = 2
     root.islandRadius = 12
     root.islandOpacity = 1.0
     root.glassEnabled = false
@@ -428,8 +441,7 @@ Item {
     root.islandEdgeMargin = 8
     root.islandPadding = 8
     root.islandGap = 4
-    root.islandInsetTop = 2
-    root.islandInsetBottom = 2
+    root.islandInset = 2
     root.islandRadius = 12
     root.islandOpacity = 1.0
   }
@@ -446,6 +458,107 @@ Item {
     root.islandColor = "#1e1e2e"
     root.textColor = "#cdd6f4"
     root.accentColor = "#89b4fa"
+  }
+
+  // --- Glass blur strength ---------------------------------------------
+  // Hyprland's blur size/passes are global (decoration:blur:*), the same
+  // knob the omablur plugin's own blur-percent slider drives. We only ever
+  // touch it while Glass islands is on, and only on an explicit change to
+  // this slider -- never automatically on every settings load, so it can't
+  // fight a concurrent change from omablur. Percent-to-size/passes mirrors
+  // omablur's own conversion so the two feel consistent.
+  function blurSizeForPercent(percent) {
+    return root.clampInt(1 + (percent / 100) * 19, 1, 20, 8)
+  }
+  function blurPassesForPercent(percent) {
+    var p = root.clampInt(percent, 0, 100, 50)
+    if (p < 34) return 1
+    if (p < 67) return 2
+    return 3
+  }
+
+  property int probedBlurRounding: 0
+  property bool probedBlurEnabled: true
+
+  function applyGlassBlurStrength() {
+    if (glassBlurProbeRoundingProc.running || glassBlurProbeEnabledProc.running
+        || glassBlurWriteProc.running) {
+      glassBlurRetryTimer.restart()
+      return
+    }
+    glassBlurProbeRoundingProc.running = true
+  }
+
+  Process {
+    id: glassBlurProbeRoundingProc
+    command: ["hyprctl", "-j", "getoption", "decoration:rounding"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        try {
+          var parsed = JSON.parse(text)
+          root.probedBlurRounding = root.clampInt(parsed.int, 0, 20, root.probedBlurRounding)
+        } catch (e) { /* keep previous value */ }
+        glassBlurProbeEnabledProc.running = true
+      }
+    }
+  }
+
+  Process {
+    id: glassBlurProbeEnabledProc
+    command: ["hyprctl", "-j", "getoption", "decoration:blur:enabled"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        try {
+          // Reported as a "bool" field, not "int" -- unlike rounding.
+          var parsed = JSON.parse(text)
+          root.probedBlurEnabled = parsed.bool !== undefined ? !!parsed.bool : !!parsed.int
+        } catch (e) { /* keep previous value */ }
+        root.writeGlassBlurStrength()
+      }
+    }
+  }
+
+  function writeGlassBlurStrength() {
+    var size = root.blurSizeForPercent(root.glassBlurStrength)
+    var passes = root.blurPassesForPercent(root.glassBlurStrength)
+    var lua = "hl.config({\n"
+      + "  decoration = {\n"
+      + "    rounding = " + root.probedBlurRounding + ",\n"
+      + "    blur = {\n"
+      + "      enabled = " + (root.probedBlurEnabled ? "true" : "false") + ",\n"
+      + "      size = " + size + ",\n"
+      + "      passes = " + passes + ",\n"
+      + "      new_optimizations = true,\n"
+      + "      ignore_opacity = true,\n"
+      + "    },\n"
+      + "  },\n"
+      + "})"
+    glassBlurWriteProc.command = ["hyprctl", "eval", lua]
+    glassBlurWriteProc.running = true
+  }
+
+  Process {
+    id: glassBlurWriteProc
+    onExited: function(exitCode) {
+      if (exitCode !== 0)
+        console.warn("radyalz-bar-control: hyprctl eval for glass blur strength exited " + exitCode)
+    }
+  }
+
+  Timer {
+    id: glassBlurApplyTimer
+    interval: 150
+    repeat: false
+    onTriggered: root.applyGlassBlurStrength()
+  }
+
+  Timer {
+    id: glassBlurRetryTimer
+    interval: 150
+    repeat: false
+    onTriggered: root.applyGlassBlurStrength()
   }
 
   function versionCompare(a, b) {
@@ -598,7 +711,16 @@ Item {
   onEnabledChanged: root.scheduleSave()
   onPositionChanged: root.scheduleSave()
   onTransparentChanged: root.scheduleSave()
-  onGlassEnabledChanged: root.scheduleSave()
+  onBarMarginTopChanged: root.scheduleSave()
+  onBarMarginBottomChanged: root.scheduleSave()
+  onGlassEnabledChanged: {
+    root.scheduleSave()
+    if (root.glassEnabled) glassBlurApplyTimer.restart()
+  }
+  onGlassBlurStrengthChanged: {
+    root.scheduleSave()
+    if (root.glassEnabled) glassBlurApplyTimer.restart()
+  }
   onTriggerThicknessChanged: root.scheduleSave()
   onAnimationModeChanged: root.scheduleSave()
   onAnimationPresetChanged: root.scheduleSave()
@@ -617,8 +739,7 @@ Item {
   onIslandEdgeMarginChanged: root.scheduleSave()
   onIslandPaddingChanged: root.scheduleSave()
   onIslandGapChanged: root.scheduleSave()
-  onIslandInsetTopChanged: root.scheduleSave()
-  onIslandInsetBottomChanged: root.scheduleSave()
+  onIslandInsetChanged: root.scheduleSave()
   onIslandRadiusChanged: root.scheduleSave()
   onIslandOpacityChanged: root.scheduleSave()
   onBarSizeOverrideEnabledChanged: root.scheduleSave()

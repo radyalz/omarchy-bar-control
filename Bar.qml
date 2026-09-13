@@ -36,6 +36,9 @@ Item {
     property bool enabled: true
     property int triggerThickness: 5
 
+    property int barMarginTop: 0
+    property int barMarginBottom: 0
+
     property string animationMode: "Slide + Fade"
     property int showSlideDuration: 500
     property int showFadeDuration: 400
@@ -54,8 +57,7 @@ Item {
     property int islandEdgeMargin: 8
     property int islandPadding: 8
     property int islandGap: 4
-    property int islandInsetTop: 2
-    property int islandInsetBottom: 2
+    property int islandInset: 2
     property int islandRadius: 12
     property real islandOpacity: 1.0
 
@@ -120,6 +122,10 @@ Item {
       autohideSettings.enabled = data.enabled
     if (isFinite(Number(data.triggerThickness)))
       autohideSettings.triggerThickness = Math.max(1, Math.min(50, Math.round(Number(data.triggerThickness))))
+    if (isFinite(Number(data.barMarginTop)))
+      autohideSettings.barMarginTop = Math.max(0, Math.min(200, Math.round(Number(data.barMarginTop))))
+    if (isFinite(Number(data.barMarginBottom)))
+      autohideSettings.barMarginBottom = Math.max(0, Math.min(200, Math.round(Number(data.barMarginBottom))))
 
     var modes = ["Slide + Fade", "Slide", "Fade"]
     if (modes.indexOf(data.animationMode) !== -1)
@@ -159,10 +165,8 @@ Item {
       autohideSettings.islandPadding = Math.max(0, Math.min(64, Math.round(Number(data.islandPadding))))
     if (isFinite(Number(data.islandGap)))
       autohideSettings.islandGap = Math.max(0, Math.min(64, Math.round(Number(data.islandGap))))
-    if (isFinite(Number(data.islandInsetTop)))
-      autohideSettings.islandInsetTop = Math.max(0, Math.min(40, Math.round(Number(data.islandInsetTop))))
-    if (isFinite(Number(data.islandInsetBottom)))
-      autohideSettings.islandInsetBottom = Math.max(0, Math.min(40, Math.round(Number(data.islandInsetBottom))))
+    if (isFinite(Number(data.islandInset)))
+      autohideSettings.islandInset = Math.max(0, Math.min(20, Math.round(Number(data.islandInset))))
     if (isFinite(Number(data.islandRadius)))
       autohideSettings.islandRadius = Math.max(0, Math.min(64, Math.round(Number(data.islandRadius))))
     if (isFinite(Number(data.islandOpacity)))
@@ -353,16 +357,9 @@ Item {
     ? root.autohideService.islandEdgeMargin : Style.space(8)
   readonly property int islandPadX: customIslandAppearance
     ? root.autohideService.islandPadding : Style.space(8)
-  readonly property int islandInsetTop: customIslandAppearance
-    ? root.autohideService.islandInsetTop : Style.space(2)
-  readonly property int islandInsetBottom: customIslandAppearance
-    ? root.autohideService.islandInsetBottom : Style.space(2)
-  readonly property int islandThickness: Math.max(1, root.barSize - islandInsetTop - islandInsetBottom)
-  // On a horizontal bar, an uneven top/bottom inset shifts the island off the
-  // slot's centre rather than shrinking it symmetrically. Unused (0) on a
-  // vertical bar, where the two settings still average into islandThickness.
-  readonly property real islandVerticalCenterOffset:
-    root.vertical ? 0 : (islandInsetTop - islandInsetBottom) / 2
+  readonly property int islandInset: customIslandAppearance
+    ? root.autohideService.islandInset : Style.space(2)
+  readonly property int islandThickness: Math.max(1, root.barSize - islandInset * 2)
   readonly property int islandRadius: customIslandAppearance
     ? root.autohideService.islandRadius : Style.cornerRadius
   readonly property int islandGap: customIslandAppearance
@@ -664,6 +661,13 @@ Item {
     autohideSettings.barSizeOverrideEnabled && autohideSettings.barThickness > 0
       ? autohideSettings.barThickness
       : (vertical ? Style.bar.sizeVertical : Style.bar.sizeHorizontal)
+  // Gap between the screen edge and the whole bar surface (not the islands
+  // inside it). barMarginTop only does anything on a "top" bar or a
+  // left/right bar's top end; barMarginBottom only on a "bottom" bar or a
+  // left/right bar's bottom end -- the opposite edge of a horizontal bar
+  // isn't anchored, so a margin there has nothing to push against.
+  readonly property int barMarginTop: Math.max(0, autohideSettings.barMarginTop)
+  readonly property int barMarginBottom: Math.max(0, autohideSettings.barMarginBottom)
 
   function normalizePosition(value) {
     return BarModel.normalizePosition(value)
@@ -1695,9 +1699,32 @@ Item {
       window: barWindow
     }
 
+    // A horizontal bar is only anchored to one edge (top or bottom), so
+    // "space above"/"space below" push it away from the screen edge via
+    // margins on that edge, but the OPPOSITE edge has nothing to push
+    // against -- that gap instead grows the window past barSize and leaves
+    // the extra strip empty/transparent, reserved but unpainted. A vertical
+    // bar is anchored top AND bottom already, so both margins directly
+    // shorten it -- no extra space needed.
+    readonly property int reservedExtent: root.vertical
+      ? root.barSize
+      : root.barSize + (
+          root.position === "top" ? root.barMarginBottom
+          : root.position === "bottom" ? root.barMarginTop
+          : 0
+        )
+
     margins {
-      top: barWindow.autohideParked && root.position === "top" ? -root.barSize : 0
-      bottom: barWindow.autohideParked && root.position === "bottom" ? -root.barSize : 0
+      top: root.vertical
+        ? root.barMarginTop
+        : (root.position === "top"
+            ? (barWindow.autohideParked ? -barWindow.reservedExtent : root.barMarginTop)
+            : 0)
+      bottom: root.vertical
+        ? root.barMarginBottom
+        : (root.position === "bottom"
+            ? (barWindow.autohideParked ? -barWindow.reservedExtent : root.barMarginBottom)
+            : 0)
       left: barWindow.autohideParked && root.position === "left" ? -root.barSize : 0
       right: barWindow.autohideParked && root.position === "right" ? -root.barSize : 0
     }
@@ -1710,7 +1737,7 @@ Item {
     }
 
     implicitWidth: root.vertical ? root.barSize : 0
-    implicitHeight: root.vertical ? 0 : root.barSize
+    implicitHeight: root.vertical ? 0 : barWindow.reservedExtent
     // Islands paint their own backgrounds; the window itself stays clear.
     color: "transparent"
     surfaceFormat.opaque: false
@@ -1719,7 +1746,15 @@ Item {
 
     Loader {
       id: barContent
-      anchors.fill: parent
+      anchors.left: parent.left
+      anchors.right: parent.right
+      // Pinned to whichever edge is anchored, so it sits flush against the
+      // real bar position and leaves any extra reservedExtent space (the
+      // "space below" gap on a top bar, or "space above" on a bottom one)
+      // empty on the far side instead of stretching into it.
+      anchors.top: root.vertical || root.position === "top" ? parent.top : undefined
+      anchors.bottom: root.vertical || root.position === "bottom" ? parent.bottom : undefined
+      height: root.vertical ? undefined : root.barSize
       sourceComponent: root.vertical ? verticalBar : horizontalBar
       opacity: 1
 
@@ -2301,7 +2336,6 @@ Item {
       z: -1
       visible: slot.implicitWidth > 0 && slot.implicitHeight > 0 && !root.drawsOwnIslands(slot.moduleName)
       anchors.centerIn: parent
-      anchors.verticalCenterOffset: root.islandVerticalCenterOffset
       width: root.vertical ? root.islandThickness : parent.width + root.islandPadX * 2
       height: root.vertical ? parent.height + root.islandPadX * 2 : root.islandThickness
       color: root.islandBackground
@@ -2321,7 +2355,6 @@ Item {
       visible: root.glassEnabled
         && slot.implicitWidth > 0 && slot.implicitHeight > 0 && !root.drawsOwnIslands(slot.moduleName)
       anchors.centerIn: parent
-      anchors.verticalCenterOffset: root.islandVerticalCenterOffset
       width: root.vertical ? root.islandThickness : parent.width + root.islandPadX * 2
       height: root.vertical ? parent.height + root.islandPadX * 2 : root.islandThickness
       radius: root.islandRadius
