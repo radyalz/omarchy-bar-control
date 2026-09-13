@@ -26,7 +26,11 @@ Column {
     onClicked: root.host.actions.openUrl("https://github.com/radyalz/omarchy-bar-control/issues")
   }
   QuickAction {
-    bar: root.host ? root.host.bar : null; text: "Diagnostics & project info"; primary: true
+    bar: root.host ? root.host.bar : null; text: "Check for updates"
     onClicked: root.host.actions.openAdvanced(2)
+  }
+  QuickAction {
+    bar: root.host ? root.host.bar : null; text: "Diagnostics & project info"; primary: true
+    onClicked: root.host.actions.openAdvanced(3)
   }
 }

@@ -76,11 +76,17 @@ Rectangle {
         property bool seen: false
         active: stack.currentIndex === 2 || seen
         onActiveChanged: if (active) seen = true
-        sourceComponent: Component { DiagnosticsPage { service: root.service } }
+        sourceComponent: Component { UpdatesPage { service: root.service } }
       }
       Loader {
         property bool seen: false
         active: stack.currentIndex === 3 || seen
+        onActiveChanged: if (active) seen = true
+        sourceComponent: Component { DiagnosticsPage { service: root.service } }
+      }
+      Loader {
+        property bool seen: false
+        active: stack.currentIndex === 4 || seen
         onActiveChanged: if (active) seen = true
         sourceComponent: Component { AboutSupportPage { service: root.service } }
       }

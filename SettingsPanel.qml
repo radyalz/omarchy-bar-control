@@ -6,7 +6,7 @@ Item {
 
   readonly property string pluginId: "radyalz.bar-control"
   readonly property var pageNames: [
-    "Autohide & Motion", "Bar", "Diagnostics", "About & Support"
+    "Autohide & Motion", "Bar", "Updates", "Diagnostics", "About & Support"
   ]
 
   property var shell: null
