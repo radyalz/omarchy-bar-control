@@ -339,6 +339,10 @@ Item {
   property color themeContrastForeground: Color.background
   property color transparentForeground: customColors ? autohideSettings.textColor : Color.bar.text
   property color accent: customColors ? autohideSettings.accentColor : Color.accent
+  // Fixed red for every "you're sizing this" flash below, independent of the
+  // theme/custom accent -- keeps them visually distinct from normal bar
+  // highlighting so they read as a measurement overlay, not bar chrome.
+  readonly property color indicatorColor: "#e5484d"
   property color foreground: themeForeground
   property color barForeground: useTransparentForeground ? transparentForeground : themeForeground
   property bool foregroundAnimationEnabled: true
@@ -1427,14 +1431,22 @@ Item {
   Timer { interval: 1500; running: true; repeat: false; onTriggered: root.triggerPreviewArmed = true }
   Timer { id: triggerPreviewTimer; interval: 1300; repeat: false; onTriggered: root.triggerPreviewActive = false }
   // Same idea for the two whole-bar margins: flash the gap they reserve so
-  // it's visible even though it's otherwise just empty screen. Only shown
-  // where that margin actually does something (see reservedZone above) --
-  // dragging "Space above" on a bottom bar correctly shows no flash, since
-  // there's nothing there to see.
+  // it's visible even though it's otherwise just empty screen.
   property bool marginAbovePreviewActive: false
   property bool marginBelowPreviewActive: false
   Timer { id: marginAbovePreviewTimer; interval: 1300; repeat: false; onTriggered: root.marginAbovePreviewActive = false }
   Timer { id: marginBelowPreviewTimer; interval: 1300; repeat: false; onTriggered: root.marginBelowPreviewActive = false }
+  // And for the four island-geometry numbers, which aren't single points but
+  // relationships between islands -- shown together as one small diagram
+  // (edge margin, two sample islands with real padding, the gap between
+  // them, and the cross-axis inset) rather than four separate flashes.
+  property bool islandGeometryPreviewActive: false
+  Timer { id: islandGeometryPreviewTimer; interval: 1300; repeat: false; onTriggered: root.islandGeometryPreviewActive = false }
+  function flashIslandGeometryPreview() {
+    if (!root.triggerPreviewArmed) return
+    root.islandGeometryPreviewActive = true
+    islandGeometryPreviewTimer.restart()
+  }
   Connections {
     target: autohideSettings
     function onTriggerThicknessChanged() {
@@ -1452,8 +1464,19 @@ Item {
       root.marginBelowPreviewActive = true
       marginBelowPreviewTimer.restart()
     }
+    function onIslandEdgeMarginChanged() { root.flashIslandGeometryPreview() }
+    function onIslandPaddingChanged() { root.flashIslandGeometryPreview() }
+    function onIslandGapChanged() { root.flashIslandGeometryPreview() }
+    function onIslandInsetChanged() { root.flashIslandGeometryPreview() }
   }
 
+  // Both margins always do something, just via different mechanisms: on the
+  // bar's own anchored edge they are a real margin (the surface itself moves,
+  // opening a gap at the screen edge); on the opposite edge they extend
+  // reservedZone instead (an invisible reservation with no surface of its
+  // own, positioned right after the bar). Each preview below is positioned
+  // to match whichever of those applies for the current position, so it is
+  // never a no-op.
   Variants {
     model: Quickshell.screens
 
@@ -1461,16 +1484,15 @@ Item {
       PanelWindow {
         required property var modelData
         screen: modelData
-        readonly property bool relevant: root.vertical || root.position === "top"
-        visible: relevant
+        readonly property bool ownEdge: root.vertical || root.position === "top"
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
 
         Rectangle {
           anchors.fill: parent
-          color: Qt.alpha(root.accent, 0.28)
+          color: Qt.alpha(root.indicatorColor, 0.28)
           border.width: 1
-          border.color: Qt.alpha(root.accent, 0.65)
+          border.color: Qt.alpha(root.indicatorColor, 0.65)
           visible: opacity > 0.01
           opacity: root.marginAbovePreviewActive ? 1 : 0
           Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -1480,10 +1502,12 @@ Item {
         implicitHeight: root.barMarginTop
 
         anchors {
-          top: true
+          top: ownEdge
+          bottom: !ownEdge
           left: root.position === "left" || !root.vertical
           right: root.position === "right" || !root.vertical
         }
+        margins.bottom: ownEdge ? 0 : root.barSize
 
         WlrLayershell.namespace: "radyalz-bar-control-margin-preview"
         WlrLayershell.layer: WlrLayer.Overlay
@@ -1502,16 +1526,15 @@ Item {
       PanelWindow {
         required property var modelData
         screen: modelData
-        readonly property bool relevant: root.vertical || root.position === "bottom"
-        visible: relevant
+        readonly property bool ownEdge: root.vertical || root.position === "bottom"
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
 
         Rectangle {
           anchors.fill: parent
-          color: Qt.alpha(root.accent, 0.28)
+          color: Qt.alpha(root.indicatorColor, 0.28)
           border.width: 1
-          border.color: Qt.alpha(root.accent, 0.65)
+          border.color: Qt.alpha(root.indicatorColor, 0.65)
           visible: opacity > 0.01
           opacity: root.marginBelowPreviewActive ? 1 : 0
           Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -1521,10 +1544,12 @@ Item {
         implicitHeight: root.barMarginBottom
 
         anchors {
-          bottom: true
+          bottom: ownEdge
+          top: !ownEdge
           left: root.position === "left" || !root.vertical
           right: root.position === "right" || !root.vertical
         }
+        margins.top: ownEdge ? 0 : (root.barMarginTop + root.barSize)
 
         WlrLayershell.namespace: "radyalz-bar-control-margin-preview"
         WlrLayershell.layer: WlrLayer.Overlay
@@ -1532,6 +1557,97 @@ Item {
         // Purely visual -- keep the input region empty so this can't ever
         // steal hover from the reveal-trigger strip it sits right next to.
         mask: Region {}
+      }
+    }
+  }
+
+  // Edge margin, padding, gap and inset are all relationships between
+  // islands, not single points -- shown together as one small diagram
+  // sitting where the bar's own islands start, instead of four separate
+  // flashes that would each only make sense with the others for context.
+  Variants {
+    model: Quickshell.screens
+
+    delegate: Component {
+      PanelWindow {
+        required property var modelData
+        screen: modelData
+        color: "transparent"
+        exclusionMode: ExclusionMode.Ignore
+        visible: opacity > 0.01
+        opacity: root.islandGeometryPreviewActive ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        implicitWidth: root.vertical ? root.barSize : 220
+        implicitHeight: root.vertical ? 220 : root.barSize
+
+        anchors {
+          top: root.position !== "bottom"
+          bottom: root.position === "bottom"
+          left: root.position !== "right"
+          right: root.position === "right"
+        }
+        margins {
+          top: root.position === "top" ? root.barMarginTop : 0
+          bottom: root.position === "bottom" ? root.barMarginBottom : 0
+        }
+
+        WlrLayershell.namespace: "radyalz-bar-control-margin-preview"
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        mask: Region {}
+
+        // Edge margin: the gap before the first island.
+        Rectangle {
+          anchors.left: parent.left
+          anchors.top: parent.top
+          anchors.bottom: parent.bottom
+          width: root.islandEdgeMargin
+          color: Qt.alpha(root.indicatorColor, 0.35)
+        }
+
+        // Two sample islands with their real padding shown as an inset
+        // content box, separated by the real gap.
+        Rectangle {
+          id: sampleIslandA
+          x: root.islandEdgeMargin
+          y: root.islandInset
+          width: 70
+          height: Math.max(1, parent.height - root.islandInset * 2)
+          radius: 6
+          color: "transparent"
+          border.width: 2
+          border.color: root.indicatorColor
+          Rectangle {
+            anchors.fill: parent
+            anchors.margins: root.islandPadding
+            radius: 3
+            color: Qt.alpha(root.indicatorColor, 0.35)
+          }
+        }
+        Rectangle {
+          x: sampleIslandA.x + sampleIslandA.width
+          y: root.islandInset
+          width: root.islandGap
+          height: Math.max(1, parent.height - root.islandInset * 2)
+          color: Qt.alpha(root.indicatorColor, 0.55)
+        }
+        Rectangle {
+          x: sampleIslandA.x + sampleIslandA.width + root.islandGap
+          y: root.islandInset
+          width: 70
+          height: Math.max(1, parent.height - root.islandInset * 2)
+          radius: 6
+          color: "transparent"
+          border.width: 2
+          border.color: root.indicatorColor
+          Rectangle {
+            anchors.fill: parent
+            anchors.margins: root.islandPadding
+            radius: 3
+            color: Qt.alpha(root.indicatorColor, 0.35)
+          }
+        }
       }
     }
   }
@@ -1549,9 +1665,9 @@ Item {
 
         Rectangle {
           anchors.fill: parent
-          color: Qt.alpha(root.accent, 0.28)
+          color: Qt.alpha(root.indicatorColor, 0.28)
           border.width: 1
-          border.color: Qt.alpha(root.accent, 0.65)
+          border.color: Qt.alpha(root.indicatorColor, 0.65)
           visible: opacity > 0.01
           opacity: root.triggerPreviewActive ? 1 : 0
           Behavior on opacity { NumberAnimation { duration: 200 } }
