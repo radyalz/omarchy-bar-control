@@ -52,8 +52,9 @@ above will be broken links.)*
 - **Island appearance** — override the edge margin, padding, gap, inset, corner
   radius and opacity of the per-widget "islands", or leave it following the
   theme.
-- **Bar size** — override bar thickness and an icon scale (best effort, since
-  some Omarchy widgets size their own icons).
+- **Bar size** — override bar thickness and a scale for icons and their
+  compact adjacent label text (best effort, since some Omarchy widgets size
+  their own icons).
 - **Glass islands** — a light sheen and edge highlight over each island, and
   asks Hyprland to blur behind this bar specifically, with its own blur
   strength slider (shared with any other blur plugin, since that part of
@@ -67,8 +68,9 @@ above will be broken links.)*
 - **Two surfaces** — a compact bar popover for quick toggles, and a full
   settings window with collapsible sections, per-section reset, and a
   diagnostics page.
-- **Update check** — the diagnostics page can compare the installed version
-  against the latest GitHub release.
+- **In-app updates** — its own sidebar page checks GitHub for a newer release
+  and can install it directly, no terminal needed (see
+  [Updating](#updating)).
 
 Settings are shared live between the bar, the popover and the settings window.
 
@@ -102,10 +104,18 @@ Non-interactive:
 ./install.sh --launcher left     # or center | right | app
 ```
 
-### Update
+### Updating
 
-Download the latest release and run `./install.sh` again — it replaces the
-plugin files in place and keeps your settings.
+The **Updates** page in the settings window (see below) checks GitHub for a
+newer release and can install it in place — no terminal needed. It downloads
+the tagged source, extracts it, and runs that copy's own `install.sh`, so it's
+the same install path this document describes, just automated. Your Omarchy
+shell restarts partway through as part of that; the settings window will
+close when it does.
+
+To update manually instead: download the latest release and run
+`./install.sh` again — it replaces the plugin files in place and keeps your
+settings.
 
 ### Uninstall
 
@@ -130,8 +140,9 @@ radyalz-bar-control-settings
 | Page | Contents |
 | --- | --- |
 | **Autohide & motion** | autohide master switch, feel/type/easing presets, reveal trigger, show timing, hide timing, motion curve |
-| **Placement & appearance** | screen edge, slide distance, surface (transparent), island geometry, bar size, colours |
-| **Diagnostics** | plugin health checks, GitHub update check, a copyable diagnostic report |
+| **Bar** | screen edge, slide distance & spacing, surface (transparent/glass), island geometry, bar size, colours |
+| **Updates** | check GitHub for a newer release and install it in place |
+| **Diagnostics** | plugin health checks in plain language, a copyable diagnostic report |
 | **About & support** | version, links, support notes |
 
 ### Where settings live
@@ -166,12 +177,12 @@ with a read-modify-write merge.
 
 ## Known limitations
 
-- **Icon scale is best effort.** Omarchy's icon widgets read sizing straight
-  from the `Style` singleton; the plugin nudges that globally and re-applies
-  on the next settings change, so a bare theme switch clears it until you
-  touch a setting again. Shell-wide text scaling is deliberately not done from
-  here — mutating the shell's base font size crashed Quickshell 0.3.1 during
-  plugin load, so icon scale now also covers the bar's own icon-label text.
+- **Scale is best effort.** Omarchy's icon widgets read sizing straight from
+  the `Style` singleton; the plugin nudges that globally and re-applies on
+  the next settings change, so a bare theme switch clears it until you touch
+  a setting again. It covers icons and their compact adjacent label text, not
+  every widget's body text — that's a shell-wide font size shared with other
+  panels, and mutating it crashed Quickshell 0.3.1 during earlier testing.
 - **Glass islands asks Hyprland for real blur, but can't force it.** It runs
   `hyprctl eval` to add a layer rule scoping compositor blur to this bar's own
   surface (verified against Hyprland 0.56's Lua config schema); it never
