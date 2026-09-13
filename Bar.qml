@@ -1574,9 +1574,6 @@ Item {
         screen: modelData
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
-        visible: opacity > 0.01
-        opacity: root.islandGeometryPreviewActive ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 200 } }
 
         implicitWidth: root.vertical ? root.barSize : 220
         implicitHeight: root.vertical ? 220 : root.barSize
@@ -1597,55 +1594,64 @@ Item {
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         mask: Region {}
 
-        // Edge margin: the gap before the first island.
-        Rectangle {
-          anchors.left: parent.left
-          anchors.top: parent.top
-          anchors.bottom: parent.bottom
-          width: root.islandEdgeMargin
-          color: Qt.alpha(root.indicatorColor, 0.35)
-        }
+        // PanelWindow itself has no assignable opacity -- the fade lives on
+        // this wrapper Item instead.
+        Item {
+          anchors.fill: parent
+          visible: opacity > 0.01
+          opacity: root.islandGeometryPreviewActive ? 1 : 0
+          Behavior on opacity { NumberAnimation { duration: 200 } }
 
-        // Two sample islands with their real padding shown as an inset
-        // content box, separated by the real gap.
-        Rectangle {
-          id: sampleIslandA
-          x: root.islandEdgeMargin
-          y: root.islandInset
-          width: 70
-          height: Math.max(1, parent.height - root.islandInset * 2)
-          radius: 6
-          color: "transparent"
-          border.width: 2
-          border.color: root.indicatorColor
+          // Edge margin: the gap before the first island.
           Rectangle {
-            anchors.fill: parent
-            anchors.margins: root.islandPadding
-            radius: 3
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: root.islandEdgeMargin
             color: Qt.alpha(root.indicatorColor, 0.35)
           }
-        }
-        Rectangle {
-          x: sampleIslandA.x + sampleIslandA.width
-          y: root.islandInset
-          width: root.islandGap
-          height: Math.max(1, parent.height - root.islandInset * 2)
-          color: Qt.alpha(root.indicatorColor, 0.55)
-        }
-        Rectangle {
-          x: sampleIslandA.x + sampleIslandA.width + root.islandGap
-          y: root.islandInset
-          width: 70
-          height: Math.max(1, parent.height - root.islandInset * 2)
-          radius: 6
-          color: "transparent"
-          border.width: 2
-          border.color: root.indicatorColor
+
+          // Two sample islands with their real padding shown as an inset
+          // content box, separated by the real gap.
           Rectangle {
-            anchors.fill: parent
-            anchors.margins: root.islandPadding
-            radius: 3
-            color: Qt.alpha(root.indicatorColor, 0.35)
+            id: sampleIslandA
+            x: root.islandEdgeMargin
+            y: root.islandInset
+            width: 70
+            height: Math.max(1, parent.height - root.islandInset * 2)
+            radius: 6
+            color: "transparent"
+            border.width: 2
+            border.color: root.indicatorColor
+            Rectangle {
+              anchors.fill: parent
+              anchors.margins: root.islandPadX
+              radius: 3
+              color: Qt.alpha(root.indicatorColor, 0.35)
+            }
+          }
+          Rectangle {
+            x: sampleIslandA.x + sampleIslandA.width
+            y: root.islandInset
+            width: root.islandGap
+            height: Math.max(1, parent.height - root.islandInset * 2)
+            color: Qt.alpha(root.indicatorColor, 0.55)
+          }
+          Rectangle {
+            x: sampleIslandA.x + sampleIslandA.width + root.islandGap
+            y: root.islandInset
+            width: 70
+            height: Math.max(1, parent.height - root.islandInset * 2)
+            radius: 6
+            color: "transparent"
+            border.width: 2
+            border.color: root.indicatorColor
+            Rectangle {
+              anchors.fill: parent
+              anchors.margins: root.islandPadX
+              radius: 3
+              color: Qt.alpha(root.indicatorColor, 0.35)
+            }
           }
         }
       }
