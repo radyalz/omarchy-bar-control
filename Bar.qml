@@ -1426,12 +1426,113 @@ Item {
   property bool triggerPreviewArmed: false
   Timer { interval: 1500; running: true; repeat: false; onTriggered: root.triggerPreviewArmed = true }
   Timer { id: triggerPreviewTimer; interval: 1300; repeat: false; onTriggered: root.triggerPreviewActive = false }
+  // Same idea for the two whole-bar margins: flash the gap they reserve so
+  // it's visible even though it's otherwise just empty screen. Only shown
+  // where that margin actually does something (see reservedZone above) --
+  // dragging "Space above" on a bottom bar correctly shows no flash, since
+  // there's nothing there to see.
+  property bool marginAbovePreviewActive: false
+  property bool marginBelowPreviewActive: false
+  Timer { id: marginAbovePreviewTimer; interval: 1300; repeat: false; onTriggered: root.marginAbovePreviewActive = false }
+  Timer { id: marginBelowPreviewTimer; interval: 1300; repeat: false; onTriggered: root.marginBelowPreviewActive = false }
   Connections {
     target: autohideSettings
     function onTriggerThicknessChanged() {
       if (!root.triggerPreviewArmed) return
       root.triggerPreviewActive = true
       triggerPreviewTimer.restart()
+    }
+    function onBarMarginTopChanged() {
+      if (!root.triggerPreviewArmed) return
+      root.marginAbovePreviewActive = true
+      marginAbovePreviewTimer.restart()
+    }
+    function onBarMarginBottomChanged() {
+      if (!root.triggerPreviewArmed) return
+      root.marginBelowPreviewActive = true
+      marginBelowPreviewTimer.restart()
+    }
+  }
+
+  Variants {
+    model: Quickshell.screens
+
+    delegate: Component {
+      PanelWindow {
+        required property var modelData
+        screen: modelData
+        readonly property bool relevant: root.vertical || root.position === "top"
+        visible: relevant
+        color: "transparent"
+        exclusionMode: ExclusionMode.Ignore
+
+        Rectangle {
+          anchors.fill: parent
+          color: Qt.alpha(root.accent, 0.28)
+          border.width: 1
+          border.color: Qt.alpha(root.accent, 0.65)
+          visible: opacity > 0.01
+          opacity: root.marginAbovePreviewActive ? 1 : 0
+          Behavior on opacity { NumberAnimation { duration: 200 } }
+        }
+
+        implicitWidth: root.vertical ? root.barSize : 0
+        implicitHeight: root.barMarginTop
+
+        anchors {
+          top: true
+          left: root.position === "left" || !root.vertical
+          right: root.position === "right" || !root.vertical
+        }
+
+        WlrLayershell.namespace: "radyalz-bar-control-margin-preview"
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        // Purely visual -- keep the input region empty so this can't ever
+        // steal hover from the reveal-trigger strip it sits right next to.
+        mask: Region {}
+      }
+    }
+  }
+
+  Variants {
+    model: Quickshell.screens
+
+    delegate: Component {
+      PanelWindow {
+        required property var modelData
+        screen: modelData
+        readonly property bool relevant: root.vertical || root.position === "bottom"
+        visible: relevant
+        color: "transparent"
+        exclusionMode: ExclusionMode.Ignore
+
+        Rectangle {
+          anchors.fill: parent
+          color: Qt.alpha(root.accent, 0.28)
+          border.width: 1
+          border.color: Qt.alpha(root.accent, 0.65)
+          visible: opacity > 0.01
+          opacity: root.marginBelowPreviewActive ? 1 : 0
+          Behavior on opacity { NumberAnimation { duration: 200 } }
+        }
+
+        implicitWidth: root.vertical ? root.barSize : 0
+        implicitHeight: root.barMarginBottom
+
+        anchors {
+          bottom: true
+          left: root.position === "left" || !root.vertical
+          right: root.position === "right" || !root.vertical
+        }
+
+        WlrLayershell.namespace: "radyalz-bar-control-margin-preview"
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        // Purely visual -- keep the input region empty so this can't ever
+        // steal hover from the reveal-trigger strip it sits right next to.
+        mask: Region {}
+      }
     }
   }
 
