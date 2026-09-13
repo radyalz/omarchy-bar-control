@@ -631,7 +631,18 @@ Item {
       }
 
       try {
-        var data = JSON.parse(request.responseText)
+        // /releases (not /releases/latest) on purpose: the "latest" endpoint
+        // only ever returns the newest non-prerelease, non-draft release, so
+        // it reports "no releases" entirely while this project is still
+        // beta-only. The list endpoint returns everything, newest first.
+        var list = JSON.parse(request.responseText)
+        if (!Array.isArray(list) || list.length === 0) {
+          root.githubStatus = "No releases"
+          root.githubStatusMessage =
+            "The repository has no published GitHub releases yet."
+          return
+        }
+        var data = list[0]
         var tag = String(data.tag_name || data.name || "").trim()
         root.latestVersion = tag
         root.latestReleaseUrl = String(data.html_url || "")
@@ -657,7 +668,7 @@ Item {
       }
     }
 
-    request.open("GET", "https://api.github.com/repos/" + slug + "/releases/latest")
+    request.open("GET", "https://api.github.com/repos/" + slug + "/releases?per_page=1")
     request.setRequestHeader("Accept", "application/vnd.github+json")
     request.send()
   }
