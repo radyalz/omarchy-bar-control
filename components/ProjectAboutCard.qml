@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import "../Version.js" as Version
 import qs.Commons
 
@@ -21,7 +22,7 @@ InfoCard {
     font.pixelSize: 12
   }
   Text {
-    width: parent.width
+    Layout.fillWidth: true
     text: "Created by " + Version.author + ". A graphical control layer for Omarchy bar autohide, motion, placement and appearance."
     color: Qt.alpha(Color.foreground, 0.85)
     font.pixelSize: 12
