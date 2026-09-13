@@ -6,7 +6,7 @@ the stock `omarchy.bar` with a drop-in clone that adds **animated autohide**, a
 **custom colours**, plus a compact bar popover and a full settings window — all
 without leaving the desktop.
 
-![version](https://img.shields.io/badge/version-0.4.7-8a63d2)
+![version](https://img.shields.io/badge/version-0.4.8-8a63d2)
 ![license](https://img.shields.io/badge/license-MIT-4c9a6b)
 ![platform](https://img.shields.io/badge/platform-Omarchy%20%2F%20Quickshell-3b7dd8)
 [![latest release](https://img.shields.io/github/v/release/radyalz/omarchy-bar-control?label=github%20release)](https://github.com/radyalz/omarchy-bar-control/releases)
@@ -46,15 +46,19 @@ above will be broken links.)*
   Bézier curve you can drag on a graph or type as control points, with a live
   preview.
 - **Placement** — dock to any screen edge; left/right turn it into a vertical
-  bar. A slide-distance control sets how far it travels off screen when hiding.
+  bar. A slide-distance control sets how far it travels off screen when
+  hiding, and "space above"/"space below" put a gap between the whole bar and
+  the screen edge for a floating look.
 - **Island appearance** — override the edge margin, padding, gap, inset, corner
   radius and opacity of the per-widget "islands", or leave it following the
   theme.
 - **Bar size** — override bar thickness and an icon scale (best effort, since
   some Omarchy widgets size their own icons).
 - **Glass islands** — a light sheen and edge highlight over each island, and
-  asks Hyprland to blur behind this bar specifically. Needs the compositor's
-  own blur switched on overall (e.g. via the omablur plugin) — this only opts
+  asks Hyprland to blur behind this bar specifically, with its own blur
+  strength slider (shared with any other blur plugin, since that part of
+  Hyprland's blur is global). Needs the compositor's own blur switched on
+  overall (e.g. via the omablur plugin) — this only opts
   the bar into it. Pairs well with a transparent bar.
 - **Colours** — follow the active Omarchy theme, or switch to Custom and edit
   the bar background, island background, foreground/text and accent with an HSV
