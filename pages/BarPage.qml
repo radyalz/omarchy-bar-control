@@ -17,6 +17,50 @@ SettingsPage {
   SectionLabel { label: "Placement" }
   PlacementCard { service: root.service }
 
+  ExpandableSection {
+    title: "Slide & spacing"
+    summary: root.service
+      ? root.service.slideDistancePercent + "% slide · "
+        + root.service.barMarginTop + "/" + root.service.barMarginBottom + " px gap"
+      : ""
+    resettable: true
+    onResetRequested: if (root.service) root.service.resetTravelDefaults()
+
+    Component {
+      ColumnLayout {
+        spacing: 12
+        ValueSlider {
+          label: "Slide distance"
+          description: "How far the bar travels off screen when it hides (needs autohide on and a Slide animation). 100% is its full size, so it disappears; lower leaves a sliver visible; above 100% overshoots the edge."
+          from: 0; to: 200; stepSize: 5; suffix: "%"
+          value: root.service ? root.service.slideDistancePercent : 100
+          enabled: root.service !== null
+          onEdited: function(value) {
+            if (!root.service) return
+            root.service.animationPreset = "Custom"
+            root.service.slideDistancePercent = Math.round(value)
+          }
+        }
+        ValueSlider {
+          label: "Space above"
+          description: "Gap before the bar: from the screen edge on a top bar (or the top of a left/right bar), or a reserved buffer above the bar on a bottom bar."
+          from: 0; to: 100; stepSize: 1; suffix: " px"
+          value: root.service ? root.service.barMarginTop : 0
+          enabled: root.service !== null
+          onEdited: function(value) { if (root.service) root.service.barMarginTop = Math.round(value) }
+        }
+        ValueSlider {
+          label: "Space below"
+          description: "Gap after the bar: to the screen edge on a bottom bar (or the bottom of a left/right bar), or a reserved buffer below the bar on a top bar."
+          from: 0; to: 100; stepSize: 1; suffix: " px"
+          value: root.service ? root.service.barMarginBottom : 0
+          enabled: root.service !== null
+          onEdited: function(value) { if (root.service) root.service.barMarginBottom = Math.round(value) }
+        }
+      }
+    }
+  }
+
   SectionLabel { label: "Appearance" }
 
   ExpandableSection {
@@ -85,7 +129,7 @@ SettingsPage {
   ExpandableSection {
     title: "Bar size"
     summary: root.service && root.service.barSizeOverrideEnabled
-      ? root.service.barThickness + " px · icons " + root.service.iconScale + "%"
+      ? root.service.barThickness + " px · " + root.service.iconScale + "% scale"
       : "Theme default"
     resettable: true
     onResetRequested: if (root.service) root.service.resetBarSizeDefaults()
@@ -113,8 +157,8 @@ SettingsPage {
           }
         }
         ValueSlider {
-          label: "Icon scale"
-          description: "Scales the bar's icon size and icon-label text together. Best effort — some Omarchy widgets size their own icons and may not follow."
+          label: "Scale"
+          description: "Scales the bar's icons and their compact adjacent label text together. Can't safely reach every widget's body text -- that's a shell-wide font size shared with other panels, and changing it crashed Quickshell during testing. Best effort either way — some Omarchy widgets size their own icons and may not follow."
           from: 60; to: 180; stepSize: 5; suffix: " %"
           value: root.service ? root.service.iconScale : 100
           enabled: root.service && root.service.barSizeOverrideEnabled

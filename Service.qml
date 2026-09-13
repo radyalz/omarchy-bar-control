@@ -95,6 +95,21 @@ Item {
   property string latestReleaseUrl: ""
   property bool updateAvailable: false
 
+  // --- In-app update install -----------------------------------------------
+  // Downloads the tagged source archive for latestVersion (no GitHub auth,
+  // no uploaded release assets needed -- every tag gets one of these for
+  // free) and runs the extracted copy's own install.sh, so this never
+  // reimplements the backup/seed/copy/shell-restart logic that script
+  // already has tested. install.sh restarts the Omarchy shell partway
+  // through, which normally kills this settings window (and the process
+  // running this code) before it can report a clean finish -- that is the
+  // expected outcome, not a failure.
+  property bool updateInstallActive: false
+  property real updateInstallProgress: 0
+  property string updateInstallStage: ""
+  property string updateInstallDetail: ""
+  property string updateInstallError: ""
+
   readonly property bool barConnected: bar !== null
   readonly property bool settingsHealthy: settingsLoaded
   readonly property bool triggerActive: enabled && settingsLoaded
@@ -435,6 +450,8 @@ Item {
 
   function resetTravelDefaults() {
     root.slideDistancePercent = 100
+    root.barMarginTop = 0
+    root.barMarginBottom = 0
   }
 
   function resetIslandGeometryDefaults() {
@@ -643,6 +660,105 @@ Item {
     request.open("GET", "https://api.github.com/repos/" + slug + "/releases/latest")
     request.setRequestHeader("Accept", "application/vnd.github+json")
     request.send()
+  }
+
+  function installUpdate() {
+    if (root.updateInstallActive || !root.updateAvailable || !root.latestVersion) return
+
+    var slug = String(root.repositoryUrl || "")
+      .replace(/^https?:\/\/github\.com\//i, "")
+      .replace(/\/+$/, "")
+    if (slug.split("/").length !== 2) {
+      root.updateInstallError = "repositoryUrl is not a github.com/owner/repo URL."
+      return
+    }
+
+    var home = Quickshell.env("HOME")
+    var updateDir = home + "/.local/state/radyalz-bar-control/update"
+    var tarPath = home + "/.local/state/radyalz-bar-control/update.tar.gz"
+    var tarUrl = "https://github.com/" + slug + "/archive/refs/tags/"
+      + root.latestVersion + ".tar.gz"
+
+    root.updateInstallActive = true
+    root.updateInstallError = ""
+    root.updateInstallDetail = ""
+    root.updateInstallStage = "Downloading " + root.latestVersion + "…"
+    root.updateInstallProgress = 0.1
+
+    // $1 updateDir, $2 tarPath, $3 tarUrl -- passed as argv, never
+    // interpolated into the script text, even though none of these values
+    // are attacker-controlled (latestVersion comes from our own GitHub
+    // releases API response).
+    var script = [
+      'set -e',
+      'rm -rf "$1"',
+      'mkdir -p "$1"',
+      'echo "STAGE:downloading"',
+      'curl -fsSL -o "$2" "$3"',
+      'echo "STAGE:extracting"',
+      'tar -xzf "$2" -C "$1" --strip-components=1',
+      'MODE=$(python3 -c \'',
+      'import json, os',
+      'p = os.path.expanduser("~/.config/omarchy/shell.json")',
+      'mode = "app"',
+      'try:',
+      '    d = json.load(open(p))',
+      '    layout = d.get("bar", {}).get("layout", {})',
+      '    for section in ("left", "center", "right"):',
+      '        for e in layout.get(section, []):',
+      '            if isinstance(e, dict) and e.get("id") == "radyalz.bar-control":',
+      '                mode = section',
+      'except Exception:',
+      '    pass',
+      'print(mode)',
+      '\')',
+      'echo "STAGE:installing:$MODE"',
+      'cd "$1"',
+      'bash install.sh --launcher "$MODE"'
+    ].join('\n')
+
+    updateInstallProc.command = ["bash", "-c", script, "bash", updateDir, tarPath, tarUrl]
+    updateInstallProc.running = true
+  }
+
+  Process {
+    id: updateInstallProc
+    stdout: StdioCollector {
+      waitForEnd: false
+      onDataChanged: {
+        var lines = String(text).split("\n")
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim()
+          if (line === "") continue
+          if (line === "STAGE:downloading") {
+            root.updateInstallStage = "Downloading " + root.latestVersion + "…"
+            root.updateInstallProgress = 0.15
+          } else if (line === "STAGE:extracting") {
+            root.updateInstallStage = "Extracting…"
+            root.updateInstallProgress = 0.4
+          } else if (line.indexOf("STAGE:installing") === 0) {
+            root.updateInstallStage =
+              "Installing — your shell will restart to finish, and this window will close."
+            root.updateInstallProgress = 0.6
+          } else if (line.indexOf("STAGE:") !== 0) {
+            root.updateInstallDetail = line
+            if (root.updateInstallProgress < 0.95)
+              root.updateInstallProgress = Math.min(0.95, root.updateInstallProgress + 0.03)
+          }
+        }
+      }
+    }
+    stderr: StdioCollector { waitForEnd: false }
+    onExited: function(exitCode) {
+      // A restart mid-install normally kills this process's parent before
+      // this ever runs -- so a clean exit here (rather than the process
+      // just vanishing) usually means it failed before getting that far.
+      if (exitCode !== 0) {
+        root.updateInstallActive = false
+        root.updateInstallError = "Update failed (exit " + exitCode + "). "
+          + (root.updateInstallDetail || "Check your network connection and try again.")
+      }
+    }
   }
 
   function refreshIssueStatus() {
