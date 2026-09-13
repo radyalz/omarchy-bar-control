@@ -1,4 +1,4 @@
-Radyalz Bar Control v0.4.9
+Radyalz Bar Control v0.4.10-beta
 
 INSTALL
 -------
